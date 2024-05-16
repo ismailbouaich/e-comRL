@@ -38,7 +38,7 @@ const Nav = () => {
                 <a className="hidden lg:inline-block py-2 px-6 bg-blue-500 hover:bg-blue-600 text-sm text-white font-bold rounded-xl transition duration-200" href="#">Sign up</a>
             </nav>
             
-            <div className={`navbar-menu transition-transform duration-500 ease-in-out fixed top-0 left-0 bottom-0 flex flex-col w-5/6 max-w-sm py-6 px-6 bg-white border-r overflow-y-auto z-50 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>  
+            <div className={`navr-menu transition-transform duration-500 ease-in-out fixed top-0 left-0 bottom-0 flex flex-col w-5/6 max-w-sm py-6 px-6 bg-white border-r overflow-y-auto z-50 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>  
                     <div className="navbar-backdrop fixed  inset-0 bg-gray-800 bg-opacity-25"  onClick={toggleMenu}></div>
                     <nav className="fixed top-0 left-0 bottom-0 flex flex-col w-5/6 max-w-sm py-6 px-6 bg-white border-r overflow-y-auto">
                         <div className="flex items-center mb-8">
