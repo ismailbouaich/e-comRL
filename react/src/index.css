@@ -15,6 +15,9 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+.navbar-backdrop {
+  transition-duration: 500ms; /* Adjust the duration to make the opacity transition faster or slower */
+}
 .img{
     --shine-deg: 45deg;
     position: relative;
