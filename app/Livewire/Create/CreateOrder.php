@@ -18,12 +18,20 @@ class CreateOrder extends Component
         'customer_id' => '',
         'delivery_worker_id' => '',
         'status' => '',
-        'session_id'=>'',
+        'session_id' => '',
     ];
     public $orderDetailsData = [
-        'product_id' => '', 'total_price' => '',
-        'amount'=>'','city'=>'','address'=>'','zip_code'=>''
-];
+        [
+            'product_id' => '',
+            'total_price' => '',
+            'amount' => '',
+            'city' => '',
+            'address' => '',
+            'zip_code' => '',
+        ],
+    ];
+
+    protected $listeners = ['updateAddressDetails'];
 
     public function mount()
     {
@@ -37,15 +45,15 @@ class CreateOrder extends Component
                 'zip_code' => '',
             ],
         ];
+
     }
+
     public function updated($propertyName)
     {
         logger("Updated property: {$propertyName}");
-
-
     }
 
-       public function goToStep($step)
+    public function goToStep($step)
     {
         if (array_key_exists($step, $this->steps)) {
             $this->currentStep = $step;
@@ -54,59 +62,56 @@ class CreateOrder extends Component
 
     public function addOrderDetail()
     {
-        $this->orderDetailsData[] = ['product_id' => '', 'total_price' => '',
-        'amount'=>'','city'=>'','address'=>'','zip_code'=>''];
+        $this->orderDetailsData[] = [
+            'product_id' => '',
+            'total_price' => '',
+            'amount' => '',
+            'city' => '',
+            'address' => '',
+            'zip_code' => '',
+        ];
     }
 
-    protected $listeners = ['updateAddressDetails' => 'updateAddressDetails'];
-  public function updateAddressDetails($data)
-{
-    // Update component data with the received address details
-    $this->orderDetailsData[0]['address'] = $data['address'];
-    $this->orderDetailsData[0]['city'] = $data['city'];
-    $this->orderDetailsData[0]['zip_code'] = $data['postalCode'];
-}
     public function removeOrderDetail($index)
     {
         unset($this->orderDetailsData[$index]);
         $this->orderDetailsData = array_values($this->orderDetailsData);
     }
 
-    public function submitForm()
+    public function handleMapClicked($data)
     {
-        try {
-            $this->validate([
-                'orderData.customer_name' => 'required|string',
-                'orderData.customer_id' => 'required|integer',
-                'orderData.delivery_worker_id' => 'required|integer',
-                'orderData.session_id'=>'required',
-                'orderData.status'=>'required',
-                'orderDetailsData.*.product_id' => 'required|integer',
-                'orderDetailsData.*.total_price' => 'required|numeric',
-                'orderDetailsData.*.amount' => 'required|numeric',
-                'orderDetailsData.*.city' => 'required|string',
-                'orderDetailsData.*.address' => 'required|string',
-                'orderDetailsData.*.zip_code' => 'required|string',
-            ]);
-    
-            $order = Order::create($this->orderData);
-    
-            foreach ($this->orderDetailsData as $detail) {
-                $detail['order_id'] = $order->id;
-                OrderDetail::create($detail);
-            }
-    
-            session()->flash('message', 'Order created successfully!');
-            $this->reset();
-            $this->resetErrorBag();
-            $this->resetValidation();
-        } catch (\Exception $ex) {
-            
-            \Log::error('Order creation failed: ' . $ex->getMessage());
-        }
-       
+        // Update component data with the received address details
+        $this->orderDetailsData[0]['address'] = $data['address'];
+        $this->orderDetailsData[0]['city'] = $data['city'];
+        $this->orderDetailsData[0]['zip_code'] = $data['postalCode'];
     }
 
+    public function submitForm()
+    {
+        $this->validate([
+            'orderData.customer_name' => 'required|string|max:255',
+            'orderData.customer_id' => 'required|integer',
+            'orderData.delivery_worker_id' => 'required|integer',
+            'orderData.session_id' => 'required|string',
+            'orderData.status' => 'required|string',
+            'orderDetailsData.*.product_id' => 'required|integer',
+            'orderDetailsData.*.total_price' => 'required|numeric|min:0',
+            'orderDetailsData.*.amount' => 'required|numeric|min:0',
+            'orderDetailsData.*.city' => 'required|string|max:255',
+            'orderDetailsData.*.address' => 'required|string|max:255',
+            'orderDetailsData.*.zip_code' => 'required|string|max:10',
+        ]);
+
+        $order = Order::create($this->orderData);
+
+        foreach ($this->orderDetailsData as $detail) {
+            $detail['order_id'] = $order->id;
+            OrderDetail::create($detail);
+        }
+
+        session()->flash('message', 'Order created successfully!');
+        $this->reset();
+    }
      public function render()
     {
         return view('livewire.create.create-order');

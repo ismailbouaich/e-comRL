@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use Carbon\Carbon;
 use App\Models\Image;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Discount;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -16,22 +18,68 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $product= Product::with('images','category')->get();
+        $products = Product::with('images', 'category')->get();
+        $activeDiscounts = Discount::where('is_active', true)->get();
 
-        return response()->json($product);
+        
+    
+        // Check if there are any active discounts
+        $hasActiveDiscounts = $activeDiscounts->isNotEmpty();
+    
+        if ($hasActiveDiscounts) {
+            // If there are active discounts, iterate through products and set a flag for discounted products
+            foreach ($products as $product) {
+                $product->discounted = false;
+                  // Initialize flag for discounted products
+                foreach ($activeDiscounts as $discount) {
+                    $productIdsArray = json_decode($discount->product_ids, true);
+                    // Decode product_ids to array
+
+                    if ($discount->applies_to_all_products || (isset($productIdsArray) && !empty($productIdsArray) && in_array($product->id, $productIdsArray))) {
+                        $product->discounted = true;
+                        $product->discounted_price = $discount->calculateDiscountedPrice($product);
+                        break; // Exit loop after finding a matching discount
+                    }
+                }
+            }
+        }
+    
+        return response()->json($products);
     }
 
     public function search(Request $request)
     {
-        $key = $request->key;
-        $products = Product::where('product_name', 'LIKE', "%{$key}%")->with('images','category')->get();
-        if ($products->isNotEmpty()) {
-            return response()->json($products); // Return JSON response when products found
+      $key = $request->key;
+    
+      // Use scopeSearch for product search with eager loading (optional for images and category)
+      $products = Product::with('images', 'category') // Adjust eager loading as needed
+        ->search($key) // Use the scopeSearch with the search keyword
+        ->get();
+    
+      // Retrieve active discounts separately
+      $activeDiscounts = Discount::where('is_active', true)->get();
+    
+      if ($products->isNotEmpty()) {
+        foreach ($products as $product) {
+            $product->discounted = false;
+            foreach ($activeDiscounts as $discount) {
+                $productIdsArray = json_decode($discount->product_ids, true);
+                if ($discount->applies_to_all_products || (isset($productIdsArray) && !empty($productIdsArray) && in_array($product->id, $productIdsArray))) {
+                    $product->discounted = true;
+                $product->discounted_price = $discount->calculateDiscountedPrice($product); // Assuming a calculateDiscountedPrice method
+                break; // Exit loop after finding a matching discount (optional)
+              }
+            }
+          }
+          return response()->json($products); // Return JSON response when products found
         } else {
-            return response()->json(['message' => 'Not Found!'], 404); // Return JSON response with 404 status
-        }
+           
+            return response()->json(
+                ['message'=>'errror',504]
+            ); // Return JSON response when products found
+      }
     }
-
+    
     public function category()
     {
         $category= Category::has('products')->get();
@@ -90,14 +138,34 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        try {
-            $product= Product::with('images','category')->find($id);
-            return response()->json($product);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'product not found'], 404);
-        }
-    }
+      try {
+        $product = Product::with('images', 'category')->find($id);
+        if ($product) {
+          $activeDiscounts = Discount::where('is_active', true)->get();
+          $discountedPrice = null;
+    
+          foreach ($activeDiscounts as $discount) {
+            $productIdsArray = json_decode($discount->product_ids, true);
 
+            if ($discount->applies_to_all_products || (isset($productIdsArray) && !empty($productIdsArray) && in_array($product->id, $productIdsArray))) {
+                $discountedPrice = $discount->calculateDiscountedPrice($product);
+              break; // Exit loop after finding a matching discount
+            }
+          }
+    
+          if ($discountedPrice !== null) {
+            $product->discounted_price = $discountedPrice; // Add discounted_price property if applicable
+          }
+    
+          return response()->json($product);
+        } else {
+          return response()->json(['error' => 'product not found'], 404);
+        }
+      } catch (\Exception $e) {
+        return response()->json(['error' => 'internal server error'], 500); // Handle internal errors more gracefully
+      }
+    }
+    
     /**
      * Show the form for editing the specified resource.
      */

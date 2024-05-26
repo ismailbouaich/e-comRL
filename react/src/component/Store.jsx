@@ -103,6 +103,8 @@ const Store = ({ user }) => {
               <div className='product-info'>
                 <h5 className='product-title'>{product.product_name}</h5>
                 <p className='product-category'>{product.category && product.category.name}</p>
+                <p>{product.price}</p>
+                <p>{product.discounted_price}</p>
                 <Link to={`/product/${product.id}`} state={{ user }} className='btn-more'>Show More</Link>
                 <button type="button" onClick={() => addToCart1(product.id, 1,product.product_name,product.images,product.price)} className="btn-add-to-cart">Add to cart2</button>
               </div>

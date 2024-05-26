@@ -32,4 +32,13 @@ class Order extends Model
     {
         return $this->orderDetails->sum('total_price');
     }
+
+    public function scopeSearch($query, $value) {
+        $query->where('customer_name', 'like', "%{$value}%")
+              ->orWhereHas('orderDetails', function($query) use ($value) {
+                  $query->where('address', 'like', "%{$value}%");
+              })
+              ->orWhere('status', 'like', "%{$value}%");
+    }
+
 }

@@ -6,6 +6,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import CommentForm from './CommentForm';
 import CommentList from './CommentList ';
+import Model from '../common/Model';
 
 const Product = ({ user }) => {
   const { id } = useParams();
@@ -20,11 +21,20 @@ const Product = ({ user }) => {
   const [show, setShow] = useState(false);
   const [stripeSessionId, setStripeSessionId] = useState();
   const [stripe_url,setStripe_url]=useState();
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleOpenModel = () => {
+    setIsOpen(true);
+  };
+
+  const handleCloseModel = () => {
+    setIsOpen(false);
+  };
   
    // State to store the Stripe session ID
 
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
+
 
   useEffect(() => {
     setLoadKey(Date.now());
@@ -114,6 +124,7 @@ const Product = ({ user }) => {
           <h1 className="mb-4">{product.product_name}</h1>
           <p>{product.description}</p>
           <p><strong>Price:</strong> ${product.price}</p>
+          <p>{product.discounted_price}</p>
           <p><strong>Stock Quantity:</strong> {product.stock_quantity}</p>
           {product.category &&  (
             <p><strong>Category:</strong> {product.category.name}</p>
@@ -125,23 +136,14 @@ const Product = ({ user }) => {
                 <label htmlFor="amount" className="form-label">Amount</label>
                 <input type="number" className="form-control" id="amount" name="amount" onChange={handleInputChange} />
               </div>
-              <Button variant="primary" onClick={handleShow}>Buy</Button>
-              <Modal show={show} onHide={handleClose}>
-                <Modal.Header closeButton>
-                  <Modal.Title>Select a Location and Payment Method</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                  <BingMap key={loadKey} onLocationSelect={handleLocationSelect} />
-                  <hr />
-                </Modal.Body>
-                <Modal.Footer>
-                  <Button variant="secondary" onClick={handleClose}>Cancel</Button>
-                  <Button variant="primary" onClick={handleSubmit} disabled={loading}>
+              <Button variant="primary" onClick={handleOpenModel}>Buy</Button>
+              {isOpen && <Model title="Map Model" onClose={handleCloseModel}>
+                <BingMap key={loadKey} onLocationSelect={handleLocationSelect} />
+                <Button variant="primary" onClick={handleSubmit} disabled={loading}>
                     {loading ? 'Processing...' : 'Order'}
                   </Button>
-                 
-                </Modal.Footer>
-              </Modal>
+                     </Model>}
+
             </form>
           </div>
         </div>

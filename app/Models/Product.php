@@ -18,6 +18,10 @@ class Product extends Model
         return $this->hasMany(OrderDetail::class);
     }
    
+    public function discount()
+    {
+        return $this->hasOne(Discount::class); // Assuming Discount model
+    }
     public function images()
     {
      return $this->hasMany(Image::class);

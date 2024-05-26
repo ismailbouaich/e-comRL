@@ -7,6 +7,7 @@ use App\Models\User;
 
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Discount;
 use Stripe\PaymentIntent;
 use App\Models\OrderDetail;
 use Illuminate\Http\Request;
@@ -71,22 +72,21 @@ class OrderController extends Controller
     
         // Initialize an array to store line items for Stripe
         $lineItems = [];     
-        // Iterate through each item in the cart
         foreach ($validateData['products'] as $item) {
             $product = Product::findOrFail($item['product_id']);
-            if ($product->stock_quantity < $item['quantity'])
-             {
-                
-                return response()->json(['error' => 'Insufficient stock for product ' . $product->product_name], 400);
+          
+            // Check stock quantity
+            if ($product->stock_quantity < $item['quantity']) {
+              return response()->json(['error' => 'Insufficient stock for product ' . $product->product_name], 400);
             }
-
+          
+            $discount = $this->getDiscountedPrice($product);
+            $totalPrice = $discount ? $discount : ($product->price * $item['quantity']);  // Use discount if available, otherwise original price
+          
             $product->decrement('stock_quantity', $item['quantity']);
-        
-        }
-            $totalPrice = $product->price * $item['quantity'];
-            // Add each item to the line items array
+          
             $lineItems[] = $this->formatLineItem($product, $totalPrice, $item['quantity']);
-        
+          }
             try {
         // Create a new Stripe Checkout session
         $checkout_session = $stripe->checkout->sessions->create([
@@ -112,7 +112,9 @@ try {
     // Iterate through cart items and create order details
     foreach ($validateData['products'] as $item) {
         $product = Product::findOrFail($item['product_id']);
-        $totalPrice = $product->price * $item['quantity'];
+
+        $discount = $this->getDiscountedPrice($product);
+        $totalPrice = $discount ? $discount : ($product->price * $item['quantity']);  // Use discount if available, otherwise original price
 
         OrderDetail::create([
             'order_id' => $order->id,
@@ -141,22 +143,33 @@ try {
             'session_id' => $checkout_session->id
         ]);
     }
+            public function getDiscountedPrice(Product $product)
+        {
+                $activeDiscounts = Discount::where('is_active', true)->get();
+                foreach ($activeDiscounts as $discount)
+                 {
+                        if ($discount->applies_to_all_products || (isset($discount->product_ids) && in_array($product->id, json_decode($discount->product_ids)))) {
+                        return $discount->calculateDiscountedPrice($product);
+                        }
+                  }
+                return null; // No discount found
+        }
     
     
-    private function formatLineItem($product, $totalPrice, $quantity) {
-        return [
-            'price_data' => [
-                'currency' => 'usd',
-                'product_data' => [
-                    'name' => $product->product_name,
-                    'description' => $product->description,
-                ],
-                'unit_amount' => $totalPrice,
-            ],
-            'quantity' => $quantity,
-        ];
-    }
-    
+private function formatLineItem($product, $totalPrice, $quantity) {
+  $totalPriceInCents = $totalPrice * 100; // Convert to cents (multiply by 100)
+  return [
+    'price_data' => [
+      'currency' => 'usd',
+      'product_data' => [
+        'name' => $product->product_name,
+        'description' => $product->description,
+      ],
+      'unit_amount' => $totalPriceInCents, // Use converted price in cents
+    ],
+    'quantity' => $quantity,
+  ];
+}
     
     public function success(Request $request)
     {
