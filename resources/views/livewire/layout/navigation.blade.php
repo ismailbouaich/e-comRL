@@ -23,12 +23,21 @@ new class extends Component
                 <!-- Logo -->
                
 
-                <div class="border rounded overflow-hidden flex">
-                    <input type="text" class="px-4 py-2" placeholder="Search...">
-                    <button class="flex items-center justify-center px-4 border-l">
-                      <svg class=" w-4 text-grey-dark" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16.32 14.9l5.39 5.4a1 1 0 0 1-1.42 1.4l-5.38-5.38a8 8 0 1 1 1.41-1.41zM10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"/></svg>
-                    </button>
-                  </div>
+             
+                    <div class="relative">
+                        <input type="text" name="q" class="w-full border h-12 shadow p-4 rounded-full dark:text-gray-800 dark:border-gray-700 dark:bg-gray-200" placeholder="search">
+                        <button type="submit">
+                            <svg class="text-teal-400 h-5 w-5 absolute top-3.5 right-3 fill-current dark:text-teal-300"
+                                xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
+                                x="0px" y="0px" viewBox="0 0 56.966 56.966"
+                                style="enable-background:new 0 0 56.966 56.966;" xml:space="preserve">
+                                <path
+                                    d="M55.146,51.887L41.588,37.786c3.486-4.144,5.396-9.358,5.396-14.786c0-12.682-10.318-23-23-23s-23,10.318-23,23  s10.318,23,23,23c4.761,0,9.298-1.436,13.177-4.162l13.661,14.208c0.571,0.593,1.339,0.92,2.162,0.92  c0.779,0,1.518-0.297,2.079-0.837C56.255,54.982,56.293,53.08,55.146,51.887z M23.984,6c9.374,0,17,7.626,17,17s-7.626,17-17,17  s-17-7.626-17-17S14.61,6,23.984,6z">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                 
                 
             </div>
 
@@ -78,6 +87,7 @@ new class extends Component
         <div class="pt-2 pb-3 space-y-1">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                 {{ __('Dashboard') }}
+                
             </x-responsive-nav-link>
         </div>
 
@@ -91,6 +101,7 @@ new class extends Component
             <div class="mt-3 space-y-1">
                 <x-responsive-nav-link :href="route('profile')" wire:navigate>
                     {{ __('Profile') }}
+                    
                 </x-responsive-nav-link>
 
                 <!-- Authentication -->
