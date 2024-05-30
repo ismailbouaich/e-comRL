@@ -38,9 +38,19 @@ Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('orders');
 
+    Route::view('roles', 'tables.role-table')
+    ->middleware(['auth'])
+    ->name('roles');
+
+    Route::view('categories', 'tables.category-table')
+    ->middleware(['auth'])
+    ->name('categories');
+
     Route::view('create/user', 'forms.create.create-user')
     ->middleware(['auth'])
     ->name('create-user');
+
+      
 
     Route::view('create/product', 'forms.create.create-product')
     ->middleware(['auth'])
@@ -73,6 +83,16 @@ Route::view('profile', 'profile')
     Route::view('order/edit/{orderId}', 'forms.edit.edit-order')
     ->middleware(['auth'])
     ->name('orders.edit');
+
+    Route::view('/users/{id}','show.user-show')
+    ->middleware(['auth'])
+    ->name('users.show');
+    Route::view('/orders/{id}', 'show.order-show')
+    ->middleware(['auth'])
+    ->name('orders.show');
+    Route::view('/products/{id}', 'show.product-show')
+    ->middleware(['auth'])
+    ->name('products.show');
 
 
 require __DIR__.'/auth.php';

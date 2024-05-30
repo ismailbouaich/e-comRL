@@ -36,7 +36,7 @@ class Order extends Model
     public function scopeSearch($query, $value) {
         $query->where('customer_name', 'like', "%{$value}%")
               ->orWhereHas('orderDetails', function($query) use ($value) {
-                  $query->where('address', 'like', "%{$value}%");
+                  $query->where('city', 'like', "%{$value}%");
               })
               ->orWhere('status', 'like', "%{$value}%");
     }
