@@ -15,6 +15,14 @@ class CreateProduct extends Component
     public $product_name, $description, $price, $stock_quantity, $category_id;
     public $images = [];
     public $categories;
+    protected $rules = [
+        'product_name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'price' => 'required|numeric',
+            'stock_quantity' => 'required|integer',
+            'category_id' => 'required|integer',
+            'images.*' => 'image|max:1024', // 1MB Max per image
+    ];
 
     public function updatedImages()
     {
@@ -25,14 +33,7 @@ class CreateProduct extends Component
 
     public function submit()
     {
-        $this->validate([
-            'product_name' => 'required|string|max:255',
-            'description' => 'required|string',
-            'price' => 'required|numeric',
-            'stock_quantity' => 'required|integer',
-            'category_id' => 'required|integer',
-            'images.*' => 'image|max:1024', // 1MB Max per image
-        ]);
+        $this->validate();
 
         $product = Product::create([
             'product_name' => $this->product_name,
@@ -54,6 +55,10 @@ class CreateProduct extends Component
         session()->flash('message', 'Product successfully created with images.');
     }
 
+    public function cancel()  {
+        return  $this->reset(['product_name', 'description', 'price', 'stock_quantity', 'category_id','file_path','product_id']);
+  
+      }
     public function mount()
     {
         $this->categories = Category::all(); // Assuming you have a Role model

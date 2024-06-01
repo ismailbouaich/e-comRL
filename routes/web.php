@@ -62,7 +62,7 @@ Route::view('profile', 'profile')
 
     Route::view('create/role', 'forms.create.create-role')
     ->middleware(['auth'])
-    ->name('create-role');
+    ->name('create.role');
 
     Route::view('create/discount', 'forms.create.create-discount')
     ->middleware(['auth'])
