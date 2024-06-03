@@ -46,9 +46,7 @@
                                     'displayName' => 'Name'
                                 ])
                               
-                              
                                 <th scope="col" class="px-4 py-3">
-                                    
                                   Actions
                                 </th>
                                
@@ -57,13 +55,10 @@
                         <tbody>
                             @foreach ($roles as $role)
                                 <tr wire:key="{{ $role->id }}" class="border-b dark:border-gray-700">
-                                    <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    <td scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                         {{ $role->id }}
-                                    </th>
+                                    </td>
                                     <td class="px-4 py-3">{{ $role->name }}</td>
-                                   
-                                    <td class="px-4 py-3">{{ $role->created_at }}</td>
-                                    <td class="px-4 py-3">{{ $role->updated_at }}</td>
                                     <td class="px-4 py-3 flex items-center justify-end">
                                         <a onclick="confirm('Are you sure you want to delete {{ $role->name }} ?') || event.stopImmediatePropagation()"
                                             wire:click="delete({{ $role->id }})" class="text-red-500">
