@@ -17,8 +17,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\OrderNotification;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Livewire\Livewire;
+
 
 
 class OrderController extends Controller
@@ -123,11 +126,21 @@ class OrderController extends Controller
                 
 
             }
-                        DB::commit();
-                    } catch (\Exception $e) {
+                     DB::commit();
+
+                     $user = User::find($validateData['customer_id']);
+                     $user->notify(new OrderNotification($order));
+
+                     Livewire::dispatch('notify', [
+                        'order_id' => $order->id,
+                        'order_amount' => $order->total_price,
+                        'order_date' => $order->created_at->toDateTimeString(),
+                    ]);
+
+                } catch (\Exception $e) {
                         DB::rollBack();
                         return response()->json(['error' => 'Database error: ' . $e->getMessage()], 500);
-                    }
+                 }
         // Create the order
        
         $product->save();
