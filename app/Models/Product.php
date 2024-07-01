@@ -18,7 +18,16 @@ class Product extends Model
         return $this->hasMany(OrderDetail::class);
     }
    
-    public function images()
+    public function discounts()
+    {
+        return $this->hasMany(Discount::class);
+    }
+
+    public function currentDiscount()
+    {
+        return $this->discounts()->current()->first();
+    }   
+     public function images()
     {
      return $this->hasMany(Image::class);
     }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import  { useState, useEffect, useContext } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import axios from 'axios';
 import Nav from './Nav'
@@ -7,7 +7,6 @@ import Login from '../component/Login';
 import Register from '../component/Register';
 import Profile from '../component/Profile';
 import Forgot from '../component/Forgot';
-import EditUser from '../component/EditUser';
 import Store from '../component/Store';
 import Product from '../component/Product';
 import Cart from '../component/Cart';
@@ -55,7 +54,7 @@ const Header = () => {
           <Route path="/profile" element={<Profile user={user} />} />
           <Route path="/forget" element={<Forgot />} />
           <Route path="/store" element={<Store user={user} />} />
-          <Route path="/edit/user/:id" element={<EditUser />} />
+          {/* <Route path="/edit/user/:id" element={<EditUser />} /> */}
           <Route path="/product/:id" element={<Product user={user} />} />
           <Route path="/cart" element={<Cart user={user} />} />
           <Route path="/success/:session_id" element={<Success />} />

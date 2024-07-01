@@ -1,8 +1,25 @@
-import React, { useState, useCallback ,useEffect} from 'react';
+import  { useState, useCallback ,useEffect} from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
+
+const links=[
+    {
+        name:"home",
+        path:"/"
+    },
+    {
+        name:"store",
+        path:"/store"
+    },
+   
+   
+];
 const Nav = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [isTransitionEnded, setIsTransitionEnded] = useState(false);
+
+    const navigate=useNavigate();
+    
 
 
     const toggleMenu = useCallback(() => {
@@ -23,9 +40,68 @@ const Nav = () => {
             setIsTransitionEnded(false);
         }
     }, [isOpen]);
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        navigate('/login');
+        
+    };
+
+    const isLoggedIn = !!localStorage.getItem('token');
+
+
+
+
+    const buttons = isLoggedIn ? (
+        <>
+            <Link className="text-gray-900 hover:text-gray-700" to="/login" onClick={handleLogout}>
+                Logout
+            </Link>
+        </>
+    ) : (
+        <>
+            <Link className="block px-4 py-3 mb-3 leading-loose text-xs text-center font-semibold bg-gray-50 hover:bg-gray-100 rounded-xl" to="/login">
+                Sign In
+            </Link>
+        </>
+    );
+
+    const profile = isLoggedIn ? (
+        <>
+            <Link className="text-gray-900 hover:text-gray-700" to="/profile">
+                Profile
+            </Link>
+        </>
+    ) : (
+        <>
+            <Link className="block px-4 py-3 mb-2 leading-loose text-xs text-center text-white font-semibold bg-blue-600 hover:bg-blue-700 rounded-xl" to="/register">
+                Sign Up
+            </Link>
+        </>
+    );
+
+    const navlinks = isLoggedIn ? (
+       <>
+        {links.map((link,index)=>{
+            return(
+                <li  key={index}>
+                <Link to={link.path} className="text-gray-900 hover:text-gray-700">
+                    {link.name}
+                </Link>
+              </li>
+            )
+        })}</>
+    ) : (
+        <>
+            
+        </>
+    );
+
+
     return (
-        <header>
-            <nav className="relative px-4 py-4 flex justify-between items-center bg-white">
+        <header className='w-full sm:h-20 lg:h-24 relative z-20'>
+            <div className='h-16flex items-center justify-center mx-auto max-w-[1920px] h-full w-full'>
+            <nav className="relative p-5 px-4 py-4 flex justify-between items-center bg-white">
                 <a className="text-3xl font-bold leading-none" href="#">
                     Logo
                 </a>
@@ -38,16 +114,14 @@ const Nav = () => {
                     </button>
                 </div>
                 <ul className="hidden lg:flex lg:mx-auto lg:items-center lg:w-auto lg:space-x-6">
-                    <li><a href="#" className="text-gray-900 hover:text-gray-700">Home</a></li>
-                    <li><a href="#" className="text-gray-900 hover:text-gray-700">About Us</a></li>
-                    <li><a href="#" className="text-gray-900 hover:text-gray-700">Services</a></li>
-                    <li><a href="#" className="text-gray-900 hover:text-gray-700">Pricing</a></li>
-                    <li><a href="#" className="text-gray-900 hover:text-gray-700">Contact</a></li>
+
+                {navlinks}
+                    
                 </ul>
-                <a className="hidden lg:inline-block lg:ml-auto lg:mr-3 py-2 px-6 bg-gray-50 hover:bg-gray-100 text-sm text-gray-900 font-bold rounded-xl transition duration-200" href="#">Sign In</a>
-                <a className="hidden lg:inline-block py-2 px-6 bg-blue-500 hover:bg-blue-600 text-sm text-white font-bold rounded-xl transition duration-200" href="#">Sign up</a>
+                {buttons}
+                        {profile}
             </nav>
-            
+            </div>
             <div className={`navbar-menu transition-transform duration-500 ease-in-out fixed top-0 left-0 bottom-0 flex flex-col w-full py-6 px-6 overflow-y-auto z-50 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`} onTransitionEnd={handleTransitionEnd}>
             <div className={`navbar-backdrop fixed inset-0  ${isTransitionEnded && isOpen ? 'backdrop-blur-lg' : ''} ${isOpen ? 'block' : 'hidden'}`} onClick={toggleMenu}></div>
                 <nav className="fixed top-0 left-0 bottom-0 flex flex-col w-5/6 max-w-sm py-6 px-6 bg-white border-r overflow-y-auto">
@@ -62,29 +136,28 @@ const Nav = () => {
                         </button>
                     </div>
                     <div>
+
                         <ul>
-                            <li className="mb-1">
-                                <a className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded" href="#">Home</a>
-                            </li>
-                            <li className="mb-1">
-                                <a className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded" href="#">About Us</a>
-                            </li>
-                            <li className="mb-1">
-                                <a className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded" href="#">Services</a>
-                            </li>
-                            <li className="mb-1">
-                                <a className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded" href="#">Pricing</a>
-                            </li>
-                            <li className="mb-1">
-                                <a className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded" href="#">Contact</a>
-                            </li>
+                        {links.map((link,index)=>{
+         return(
+                <li className="mb-1" key={index}>
+                <Link to={link.path} className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded">
+                    {link.name}
+                </Link>
+              </li>
+            )
+        })}
+                          
                         </ul>
                     </div>
                     <div className="mt-auto">
                         <div className="pt-6">
-                            <a className="block px-4 py-3 mb-3 leading-loose text-xs text-center font-semibold bg-gray-50 hover:bg-gray-100 rounded-xl" href="#">Sign in</a>
-                            <a className="block px-4 py-3 mb-2 leading-loose text-xs text-center text-white font-semibold bg-blue-600 hover:bg-blue-700 rounded-xl" href="#">Sign Up</a>
+
+                        {buttons}
+                        {profile}
+                            
                         </div>
+
                         <p className="my-4 text-xs text-center text-gray-400">
                             <span>Copyright © 2021</span>
                         </p>

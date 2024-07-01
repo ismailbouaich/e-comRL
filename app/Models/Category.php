@@ -12,7 +12,11 @@ class Category extends Model
     protected $table = 'categories'; // Name of the categories table
     protected $fillable = ['name','icon'];
 
+    public function scopeSearch($query,$value) {
 
+        $query->where('name','like',"%{$value}%"); 
+        
+    }
     public function products()
     {
         return $this->hasMany(Product::class);

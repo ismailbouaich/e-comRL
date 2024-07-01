@@ -51,6 +51,11 @@ Route::get('/user/list',[UserController::class,'userlist']);
 Route::get('/user/edit/{id}',[UserController::class,'edit']);
 Route::post('/user/update/{id}',[UserController::class,'update']);
 Route::get('/product/list',[ProductController::class,'index']);
+
+Route::get('/product/mostSelling',[ProductController::class,'bestSellingProduct']);
+
+
+
 Route::get('/categories',[ProductController::class,'category']);
 Route::get('/product/{id}',[ProductController::class,'show']);
 Route::get('/search/{key}',[ProductController::class,'search']);
@@ -65,6 +70,8 @@ Route::get('/success', [OrderController::class, 'success'])->name('checkout.succ
 Route::get('/cancel', [OrderController::class, 'cancel'])->name('checkout.cancel');
 Route::get('/generateQrCode', [OrderController::class, 'generateQrCode']);
 Route::post('/webhook', [OrderController::class, 'webhook']);
+
+
 //cart Route
 
 Route::get('/cart/{id}', [CartController::class, 'index']);

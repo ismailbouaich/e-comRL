@@ -45,30 +45,42 @@ class AuthController extends Controller
     ], 401);
 }
 
-    public function register(RegisterRequest $request){
+public function register(RegisterRequest $request)
+{
+    try {
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role_id' => '3'
+        ]);
 
-        try {
-            $user=User::create([
-                'name'=>$request->name,
-                'email'=>$request->email,
-                'password'=>Hash::make($request->password),
-                'role_id'=>'3'
-            ]);
+        $token = $user->createToken('app')->accessToken;
 
-            $token=$user->createToken('app')->accessToken;
+        $admins = User::whereHas('role', function ($query) {
+            $query->where('name', 'admin');
+        })->get();
 
-            return response([
-                'message'=>'Registration Successfully ',
-                'token'=>$token,
-                'user'=>$user
-              ],200);
-            
-
-        } catch (\Exception $exception) {
-            return response(['message'=>$exception->getMessage()],400);
-
+        foreach ($admins as $admin) {
+            $notification = new \MBarlow\Megaphone\Types\Important(
+                'New Order Placed',
+                'A new order has been placed by ',
+                'https://example.com/order-details', // Optional: URL
+                'View Order Details' // Optional: Link Text
+            );
+            $admin->notify($notification);
         }
+
+        return response([
+            'message' => 'Registration Successfully',
+            'token' => $token,
+            'user' => $user
+        ], 200);
+    } catch (\Exception $exception) {
+        return response(['message' => $exception->getMessage()], 400);
     }
+}
+
 
 
     public function loginDelivery(Request $request)

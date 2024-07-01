@@ -15,7 +15,11 @@
         "vite": "^4.0.0"
     },
     "dependencies": {
+        "alpinejs": "^3.14.0",
         "apexcharts": "^3.48.0",
-        "php": "^1.0.2"
+        "laravel-echo": "^1.16.1",
+        "livewire": "^0.6.1",
+        "php": "^1.0.2",
+        "pusher-js": "^8.4.0-rc2"
     }
 }

@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
+use MBarlow\Megaphone\HasMegaphone;
+
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasMegaphone;
+    
 
     /**
      * The attributes that are mass assignable.
@@ -75,6 +78,17 @@ class User extends Authenticatable
         
     }
     
+    public static function findAvailableDeliveryWorker()
+    {
+        return self::whereHas('role', function ($query) {
+            $query->where('name', 'delivery_worker');
+        })
+        ->whereDoesntHave('assignedOrders', function ($query) {
+            $query->where('status', 'not_complete');
+        })
+        ->inRandomOrder()
+        ->first();
+    }
     public function scopeWithRoleAndDateRange($query, $roleName, $startDate, $endDate)
     {
         return $query->whereHas('role', function ($query) use ($roleName) {

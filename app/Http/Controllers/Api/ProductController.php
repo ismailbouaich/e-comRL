@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use Carbon\Carbon;
 use App\Models\Image;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Discount;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-
+use App\Models\OrderDetail;
 
 class ProductController extends Controller
 {
@@ -16,22 +18,79 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $product= Product::with('images','category')->get();
+        $products = Product::with('images', 'category', 'discounts')->get();
+        
+        // Iterate through products and check for active discounts
+        foreach ($products as $product) {
+            $productDiscount = $product->discounts->where('is_active', true)
+                                                  ->where('start_date', '<=', now())
+                                                  ->where('end_date', '>=', now())
+                                                  ->first();
+            if ($productDiscount) {
+                $product->is_discounted = true;
+                if ($productDiscount->discount_type === 'percentage') {
+                    $product->discounted_price = $product->price * (1 - $productDiscount->discount_value / 100);
+                } else {
+                    $product->discounted_price = $product->price - $productDiscount->discount_value;
+                }
+                $product->discount_name = $productDiscount->name;
+                $product->discount_code = $productDiscount->code;
+            } else {
+                $product->is_discounted = false;
+            }
+        }
+    
+        return response()->json($products);
+    }
+    
+    
 
-        return response()->json($product);
+    public function bestSellingProduct(){
+
+      $bestsellingPrd=OrderDetail::bestSellingProduct();
+
+      return response()->json($bestsellingPrd);
+
+
     }
 
     public function search(Request $request)
     {
-        $key = $request->key;
-        $products = Product::where('product_name', 'LIKE', "%{$key}%")->with('images','category')->get();
-        if ($products->isNotEmpty()) {
-            return response()->json($products); // Return JSON response when products found
-        } else {
-            return response()->json(['message' => 'Not Found!'], 404); // Return JSON response with 404 status
-        }
+     try {
+      
+      $key = $request->key;
+    
+      $products = Product::with('images', 'category', 'discounts')
+      ->search($key)
+      ->get();
+        
+      
+      foreach ($products as $product) {
+          $productDiscount = $product->discounts->where('is_active', true)
+                                                ->where('start_date', '<=', now())
+                                                ->where('end_date', '>=', now())
+                                                ->first();
+          if ($productDiscount) {
+              $product->is_discounted = true;
+              if ($productDiscount->discount_type === 'percentage') {
+                  $product->discounted_price = $product->price * (1 - $productDiscount->discount_value / 100);
+              } else {
+                  $product->discounted_price = $product->price - $productDiscount->discount_value;
+              }
+              $product->discount_name = $productDiscount->name;
+              $product->discount_code = $productDiscount->code;
+          } else {
+              $product->is_discounted = false;
+          }
+      }
+  
+      return response()->json($products);
+     } catch (\Exception $exception) {
+      return response(['message'=>$exception->getMessage()],400);
+     }
+      
     }
-
+    
     public function category()
     {
         $category= Category::has('products')->get();
@@ -91,13 +150,33 @@ class ProductController extends Controller
     public function show($id)
     {
         try {
-            $product= Product::with('images','category')->find($id);
-            return response()->json($product);
+            $product = Product::with('images', 'category')->find($id);
+            if ($product) {
+                $currentDiscount = $product->currentDiscount();
+                
+                // Include discount information in the product response
+                if ($currentDiscount) {
+                    $product->is_discounted = true;
+                    if ($currentDiscount->discount_type === 'percentage') {
+                        $product->discounted_price = $product->price * (1 - $currentDiscount->discount_value / 100);
+                    } else {
+                        $product->discounted_price = $product->price - $currentDiscount->discount_value;
+                    }
+                    $product->discount_name = $currentDiscount->name;
+                    $product->discount_code = $currentDiscount->code;
+                } else {
+                    $product->is_discounted = false;
+                }
+                
+                return response()->json($product);
+            } else {
+                return response()->json(['error' => 'Product not found'], 404);
+            }
         } catch (\Exception $e) {
-            return response()->json(['error' => 'product not found'], 404);
+            return response()->json(['error' => 'Internal server error'], 500); // Handle internal errors more gracefully
         }
     }
-
+    
     /**
      * Show the form for editing the specified resource.
      */

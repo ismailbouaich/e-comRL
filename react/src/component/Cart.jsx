@@ -3,18 +3,20 @@ import axios from 'axios';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import BingMap from './BingMap'; // Assuming BingMap component is imported
+import { useNavigate } from 'react-router';
+
 
 const Cart = ({ user }) => {
   const [checkAll, setCheckAll] = useState(false);
   const [products, setProducts] = useState([]);
   const [orderItems, setOrderItems] = useState([]); // Array to hold selected items for order
   const [order, setOrder] = useState({
-    amount: '', // Adjust as needed
+    quantity: '', // Adjust as needed
     address: '',
     zip_code: '',
     city: '',
   });
-
+  
 
   const [loading, setLoading] = useState(false);
   const [loadKey, setLoadKey] = useState(Date.now()); // For potential BingMap re-rendering
@@ -38,8 +40,14 @@ useEffect(() => {
   }, []);
 
 
-
-
+const navigate = useNavigate();
+   
+    
+  useEffect(() => {
+    if (!localStorage.getItem('token')) {
+      return navigate('/login')
+    }
+  });
 
   useEffect(() => {
     if (stripe_url) {

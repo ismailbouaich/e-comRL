@@ -10,7 +10,30 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
+.headerMenu .menuItem:hover > .megaMenu,
+  .headerMenu .menuItem:hover > .subMenu {
+    visibility: visible;
+    @apply top-full;
+  }
+  .headerMenu .menuItem:hover > .megaMenu,
+  .headerMenu .menuItem:hover > .subMenu {
+    visibility: visible;
+    @apply top-full;
+  }
+  .headerMenu .menuItem:hover > a::before {
+    @apply w-full ltr:right-auto ltr:left-0 rtl:left-auto rtl:right-0;
+  }
+  .headerMenu .menuItem:hover > .megaMenu,
+  .headerMenu .menuItem:hover > .subMenu {
+    visibility: visible;
+    @apply top-full;
+  }
+  .headerMenu .menuItem > a::before {
+    @apply absolute w-0 -bottom-7;
+    content: '';
+    height: 3px;
+    transition: all 0.3s ease-in-out 0s;
+  }
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
