@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router';
 
 const Confirmed = () => {
   const [loading, setLoading] = useState(false);
   const [qrCodeBase64, setQrCodeBase64] = useState(null);
   const [order, setOrder] = useState(null);
   const [message, setMessage] = useState('');
+
+  const navigate = useNavigate();
+   
+    
+  useEffect(() => {
+    if (!localStorage.getItem('token')) {
+      return navigate('/login')
+    }
+  });
+
 
   useEffect(() => {
     setLoading(true);

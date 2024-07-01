@@ -19,6 +19,7 @@
         "lcobucci/jwt": "4.3",
         "livewire/livewire": "^3.4",
         "livewire/volt": "^1.0",
+        "mbarlow/megaphone": "^2.0",
         "phpoffice/phpspreadsheet": "^2.1",
         "pusher/pusher-php-server": "^7.2",
         "simplesoftwareio/simple-qrcode": "~4",

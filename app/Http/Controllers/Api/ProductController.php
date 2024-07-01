@@ -9,7 +9,7 @@ use App\Models\Category;
 use App\Models\Discount;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-
+use App\Models\OrderDetail;
 
 class ProductController extends Controller
 {
@@ -18,66 +18,77 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::with('images', 'category')->get();
-        $activeDiscounts = Discount::where('is_active', true)->get();
-
+        $products = Product::with('images', 'category', 'discounts')->get();
         
-    
-        // Check if there are any active discounts
-        $hasActiveDiscounts = $activeDiscounts->isNotEmpty();
-    
-        if ($hasActiveDiscounts) {
-            // If there are active discounts, iterate through products and set a flag for discounted products
-            foreach ($products as $product) {
-                $product->discounted = false;
-                  // Initialize flag for discounted products
-                foreach ($activeDiscounts as $discount) {
-                    $productIdsArray = json_decode($discount->product_ids, true);
-                    // Decode product_ids to array
-
-                    if ($discount->applies_to_all_products || (isset($productIdsArray) && !empty($productIdsArray) && in_array($product->id, $productIdsArray))) {
-                        $product->discounted = true;
-                        $product->discounted_price = $discount->calculateDiscountedPrice($product);
-                        break; // Exit loop after finding a matching discount
-                    }
+        // Iterate through products and check for active discounts
+        foreach ($products as $product) {
+            $productDiscount = $product->discounts->where('is_active', true)
+                                                  ->where('start_date', '<=', now())
+                                                  ->where('end_date', '>=', now())
+                                                  ->first();
+            if ($productDiscount) {
+                $product->is_discounted = true;
+                if ($productDiscount->discount_type === 'percentage') {
+                    $product->discounted_price = $product->price * (1 - $productDiscount->discount_value / 100);
+                } else {
+                    $product->discounted_price = $product->price - $productDiscount->discount_value;
                 }
+                $product->discount_name = $productDiscount->name;
+                $product->discount_code = $productDiscount->code;
+            } else {
+                $product->is_discounted = false;
             }
         }
     
         return response()->json($products);
     }
+    
+    
+
+    public function bestSellingProduct(){
+
+      $bestsellingPrd=OrderDetail::bestSellingProduct();
+
+      return response()->json($bestsellingPrd);
+
+
+    }
 
     public function search(Request $request)
     {
+     try {
+      
       $key = $request->key;
     
-      // Use scopeSearch for product search with eager loading (optional for images and category)
-      $products = Product::with('images', 'category') // Adjust eager loading as needed
-        ->search($key) // Use the scopeSearch with the search keyword
-        ->get();
-    
-      // Retrieve active discounts separately
-      $activeDiscounts = Discount::where('is_active', true)->get();
-    
-      if ($products->isNotEmpty()) {
-        foreach ($products as $product) {
-            $product->discounted = false;
-            foreach ($activeDiscounts as $discount) {
-                $productIdsArray = json_decode($discount->product_ids, true);
-                if ($discount->applies_to_all_products || (isset($productIdsArray) && !empty($productIdsArray) && in_array($product->id, $productIdsArray))) {
-                    $product->discounted = true;
-                $product->discounted_price = $discount->calculateDiscountedPrice($product); // Assuming a calculateDiscountedPrice method
-                break; // Exit loop after finding a matching discount (optional)
+      $products = Product::with('images', 'category', 'discounts')
+      ->search($key)
+      ->get();
+        
+      
+      foreach ($products as $product) {
+          $productDiscount = $product->discounts->where('is_active', true)
+                                                ->where('start_date', '<=', now())
+                                                ->where('end_date', '>=', now())
+                                                ->first();
+          if ($productDiscount) {
+              $product->is_discounted = true;
+              if ($productDiscount->discount_type === 'percentage') {
+                  $product->discounted_price = $product->price * (1 - $productDiscount->discount_value / 100);
+              } else {
+                  $product->discounted_price = $product->price - $productDiscount->discount_value;
               }
-            }
+              $product->discount_name = $productDiscount->name;
+              $product->discount_code = $productDiscount->code;
+          } else {
+              $product->is_discounted = false;
           }
-          return response()->json($products); // Return JSON response when products found
-        } else {
-           
-            return response()->json(
-                ['message'=>'errror',504]
-            ); // Return JSON response when products found
       }
+  
+      return response()->json($products);
+     } catch (\Exception $exception) {
+      return response(['message'=>$exception->getMessage()],400);
+     }
+      
     }
     
     public function category()
@@ -138,32 +149,32 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-      try {
-        $product = Product::with('images', 'category')->find($id);
-        if ($product) {
-          $activeDiscounts = Discount::where('is_active', true)->get();
-          $discountedPrice = null;
-    
-          foreach ($activeDiscounts as $discount) {
-            $productIdsArray = json_decode($discount->product_ids, true);
-
-            if ($discount->applies_to_all_products || (isset($productIdsArray) && !empty($productIdsArray) && in_array($product->id, $productIdsArray))) {
-                $discountedPrice = $discount->calculateDiscountedPrice($product);
-              break; // Exit loop after finding a matching discount
+        try {
+            $product = Product::with('images', 'category')->find($id);
+            if ($product) {
+                $currentDiscount = $product->currentDiscount();
+                
+                // Include discount information in the product response
+                if ($currentDiscount) {
+                    $product->is_discounted = true;
+                    if ($currentDiscount->discount_type === 'percentage') {
+                        $product->discounted_price = $product->price * (1 - $currentDiscount->discount_value / 100);
+                    } else {
+                        $product->discounted_price = $product->price - $currentDiscount->discount_value;
+                    }
+                    $product->discount_name = $currentDiscount->name;
+                    $product->discount_code = $currentDiscount->code;
+                } else {
+                    $product->is_discounted = false;
+                }
+                
+                return response()->json($product);
+            } else {
+                return response()->json(['error' => 'Product not found'], 404);
             }
-          }
-    
-          if ($discountedPrice !== null) {
-            $product->discounted_price = $discountedPrice; // Add discounted_price property if applicable
-          }
-    
-          return response()->json($product);
-        } else {
-          return response()->json(['error' => 'product not found'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Internal server error'], 500); // Handle internal errors more gracefully
         }
-      } catch (\Exception $e) {
-        return response()->json(['error' => 'internal server error'], 500); // Handle internal errors more gracefully
-      }
     }
     
     /**

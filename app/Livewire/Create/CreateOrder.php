@@ -29,7 +29,7 @@ class CreateOrder extends Component
         [
             'product_id' => '',
             'total_price' => '',
-            'amount' => '',
+            'quantity' => '',
             'city' => '',
             'address' => '',
             'zip_code' => '',
@@ -44,7 +44,7 @@ class CreateOrder extends Component
         'orderData.session_id' => 'required|string',
         'orderDetailsData.*.product_id' => 'required|integer',
         'orderDetailsData.*.total_price' => 'required|numeric',
-        'orderDetailsData.*.amount' => 'required|integer',
+        'orderDetailsData.*.quantity' => 'required|integer',
         'orderDetailsData.*.city' => 'required|string',
         'orderDetailsData.*.address' => 'required|string',
         'orderDetailsData.*.zip_code' => 'required|string',
@@ -87,7 +87,7 @@ class CreateOrder extends Component
         $this->orderDetailsData[] = [
             'product_id' => '',
             'total_price' => '',
-            'amount' => '',
+            'quantity' => '',
             'city' => '',
             'address' => '',
             'zip_code' => '',

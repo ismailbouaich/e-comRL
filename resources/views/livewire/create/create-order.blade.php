@@ -67,9 +67,9 @@
                                     </div>
                                 </div>
                                 <div class="sm:col-span-2">
-                                    <label for="amount_{{ $index }}" class="block text-sm font-medium leading-6 text-gray-900">Amount</label>
+                                    <label for="quantity_{{ $index }}" class="block text-sm font-medium leading-6 text-gray-900">Quantity</label>
                                     <div class="mt-2">
-                                        <input type="text" wire:model.defer="orderDetailsData.{{ $index }}.amount" id="amount_{{ $index }}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="Amount">
+                                        <input type="text" wire:model.defer="orderDetailsData.{{ $index }}.quantity" id="quantity_{{ $index }}" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="Quantity">
                                     </div>
                                 </div>
                                 <div class="sm:col-span-2">

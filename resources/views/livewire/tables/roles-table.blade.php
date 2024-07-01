@@ -4,7 +4,7 @@
     <section class="mt-10">
         <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
             <!-- Start coding here -->
-            <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
+            <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden dark:bg-gray-700/50">
                 <div class="flex items-center justify-between d p-4">
                     <div class="flex">
                         <div class="relative w-full">
@@ -17,14 +17,14 @@
                                 </svg>
                             </div>
                             <input wire:model.live.debounce.300ms="search" type="text"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 "
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700/50"
                                 placeholder="Search" required="">
                         </div>
                     </div>
                     <div class="flex space-x-3">
                         <div class="flex space-x-3 items-center">
                             <label class="w-40 text-sm font-medium text-gray-900">User Type :</label>
-                            <select wire:model.live="admin" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                            <select wire:model.live="admin" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700/50">
                                 <option value="">All</option>
                                 <option value="customer">Customer</option>
                                 <option value="admin">Admin</option>
@@ -34,8 +34,8 @@
                     </div>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400 ">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-800/50">
                             <tr>
                                 @include('livewire.tables.includes.table-sortable-th',[
                                     'name' => 'id',

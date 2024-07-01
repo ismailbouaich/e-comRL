@@ -1,9 +1,8 @@
 import  { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import BingMap from './BingMap';
 import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
 import CommentForm from './CommentForm';
 import CommentList from './CommentList ';
 import Model from '../common/Model';
@@ -13,16 +12,24 @@ const Product = ({ user }) => {
   const [product, setProduct] = useState({});
   const [selectedImage, setSelectedImage] = useState(null);
   const [order, setOrder] = useState({
-    amount: '',
+    quantity: '',
     products: [],
   });
   const [loading, setLoading] = useState(false);
   const [loadKey, setLoadKey] = useState(Date.now());
-  const [show, setShow] = useState(false);
   const [stripeSessionId, setStripeSessionId] = useState();
   const [stripe_url,setStripe_url]=useState();
 
   const [isOpen, setIsOpen] = useState(false);
+
+  const navigate = useNavigate();
+   
+    
+  useEffect(() => {
+    if (!localStorage.getItem('token')) {
+      return navigate('/login')
+    }
+  });
 
   const handleOpenModel = () => {
     setIsOpen(true);
@@ -86,7 +93,7 @@ const Product = ({ user }) => {
     setLoading(true);
     const orderData = { 
       ...order, 
-      products: [{ product_id: product.id, quantity: order.amount }], 
+      products: [{ product_id: product.id, quantity: order.quantity }], 
       customer_id: user.id, 
       customer_name: user.name,
     };
@@ -133,8 +140,8 @@ const Product = ({ user }) => {
           <div className="col-md-6">
             <form onSubmit={handleSubmit} action='post'>
               <div className="mb-3">
-                <label htmlFor="amount" className="form-label">Amount</label>
-                <input type="number" className="form-control" id="amount" name="amount" onChange={handleInputChange} />
+                <label htmlFor="quantity" className="form-label">quantity</label>
+                <input type="number" className="form-control" id="quantity" name="quantity" onChange={handleInputChange} />
               </div>
               <Button variant="primary" onClick={handleOpenModel}>Buy</Button>
               {isOpen && <Model title="Map Model" onClose={handleCloseModel}>

@@ -63,7 +63,7 @@
                                                 <li>
                                                     Product ID: {{ $detail->product_id }},
                                                     Price: {{ $detail->total_price }},
-                                                    Amount: {{ $detail->amount }},
+                                                    Quantity: {{ $detail->quantity }},
                                                     Address: {{ $detail->address }},
                                                     City: {{ $detail->city }},
                                                     ZIP: {{ $detail->zip_code }}

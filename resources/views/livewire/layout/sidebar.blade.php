@@ -1,4 +1,4 @@
-<div x-data="{ collapsed: false }" class="flex flex-col h-full overflow-hidden text-gray-700 bg-gray-100 rounded transition-all duration-300 ease-in-out" :class="{ 'w-16': collapsed, 'w-64': !collapsed }">
+<div x-data="{ collapsed: false }" class="flex flex-col h-full overflow-hidden text-gray-700 bg-gray-100 rounded transition-all duration-300 ease-in-out dark:bg-gray-800" :class="{ 'w-16': collapsed, 'w-64': !collapsed } ">
   <!-- Collapse button -->
   <a @click="collapsed = !collapsed" class="flex items-center justify-center mt-3 cursor-pointer">
     <svg x-show="!collapsed" class="w-8 h-8 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -32,7 +32,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
         </button>
-        <div x-show="open" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95" class="w-full px-6 py-2 bg-gray-50">
+        <div x-show="open" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95" class="w-full px-6 py-2 bg-gray-50 dark:bg-gray-700/50">
             <x-sidebar-link :href="route('users')" :active="request()->routeIs('users')" wire:navigate>
                 <span class="ml-8 text-sm font-medium">{{ __('users') }}</span>
             </x-sidebar-link>
@@ -63,16 +63,14 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
         </button>
-        <div x-show="open" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95" class="w-full px-6 py-2 bg-gray-50">
+        <div x-show="open" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95" class="w-full px-6 py-2 bg-gray-50 dark:bg-gray-700/50">
             <x-sidebar-link :href="route('roles')" :active="request()->routeIs('roles')" wire:navigate>
                 <span class="ml-8 text-sm font-medium">{{ __('roles') }}</span>
             </x-sidebar-link>
             <x-sidebar-link :href="route('create.role')" :active="request()->routeIs('create.role')" wire:navigate>
                 <span class="ml-8 text-sm font-medium">{{ __('create') }}</span>
             </x-sidebar-link>
-            <x-sidebar-link :href="route('orders')" :active="request()->routeIs('orders')" wire:navigate>
-                <span class="ml-8 text-sm font-medium">{{ __('orders') }}</span>
-            </x-sidebar-link>
+          
         </div>
     </div>
     

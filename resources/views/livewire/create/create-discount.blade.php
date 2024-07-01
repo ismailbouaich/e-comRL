@@ -29,7 +29,7 @@
                 <div class="w-2/3">
                     <select wire:model="discount_type" id="discount_type" name="discount_type" class="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                         <option value="percentage">Percentage</option>
-                        <option value="fixed_amount">Fixed Amount</option>
+                        <option value="fixed">Fixed Amount</option>
                     </select>
                     @error('discount_type')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
@@ -40,7 +40,7 @@
             <div class="flex items-center">
                 <label for="discount_value" class="w-1/3 block text-sm font-medium text-gray-700">Discount Value:</label>
                 <div class="w-2/3">
-                    <input type="number" step="0.01" wire:model="discount_value" id="discount_value" name="discount_value" class="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <input type="text"  wire:model="discount_value" id="discount_value" name="discount_value" class="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                     @error('discount_value')
                         <span class="text-red-500 text-sm">{{ $message }}</span>
                     @enderror
@@ -74,26 +74,9 @@
             </div>
             
             <div class="flex items-center">
-                <label for="minimum_order_amount" class="w-1/3 block text-sm font-medium text-gray-700">Minimum Order Amount:</label>
-                <div class="w-2/3">
-                    <input type="number" step="0.01" wire:model="minimum_order_amount" id="minimum_order_amount" name="minimum_order_amount" class="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    @error('minimum_order_amount')
-                        <span class="text-red-500 text-sm">{{ $message }}</span>
-                    @enderror
-                </div>
-            </div>
-            
-            <div class="flex items-center">
-                <label for="applies_to_all_products" class="w-1/3 block text-sm font-medium text-gray-700">Applies to All Products:</label>
-                <div class="w-2/3">
-                    <input type="checkbox" wire:model="applies_to_all_products" id="applies_to_all_products" name="applies_to_all_products" class="rounded">
-                </div>
-            </div>
-            
-            <div class="flex items-center">
                 <label for="product_ids" class="w-1/3 block text-sm font-medium text-gray-700">Product IDs:</label>
                 <div class="w-2/3">
-                    <select wire:model="product_ids" id="product_ids" name="product_ids" multiple class="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <select wire:model="product_id" id="product_id" name="product_id"  class="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                         @foreach ($products as $product)
                             <option value="{{ $product->id }}">{{ $product->product_name }}</option>
                         @endforeach

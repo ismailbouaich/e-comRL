@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import Category from './Category';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import "./store.scss"
 
@@ -13,6 +13,15 @@ const Store = ({ user }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [searchError, setSearchError] = useState(false);
   const [typingTimeout, setTypingTimeout] = useState(null);
+
+  const navigate = useNavigate();
+   
+    
+  useEffect(() => {
+    if (!localStorage.getItem('token')) {
+      return navigate('/login')
+    }
+  });
 
   useEffect(() => {
     axios.get(`/product/list`)
@@ -29,10 +38,7 @@ const Store = ({ user }) => {
     if (typingTimeout) {
       clearTimeout(typingTimeout);
     }
-
-    setSearchError(false); // Reset search error
-
-    // Set a new timeout to perform search after a delay
+    setSearchError(false); 
     const timeout = setTimeout(() => {
       axios.get(`/search/${searchKey}`)
         .then((response) => {
@@ -40,10 +46,10 @@ const Store = ({ user }) => {
         })
         .catch((error) => {
           console.error(error);
-          setSearchError(true); // Set search error if request fails
-          setSearchResults([]); // Clear search results
+          setSearchError(true); 
+          setSearchResults([]); 
         });
-    }, 500); // Adjust delay as needed
+    }, 500); 
 
     setTypingTimeout(timeout);
   };
@@ -54,23 +60,17 @@ const Store = ({ user }) => {
 
    
     const addToCart1 = (productId, quantity,product_name,images,price) => {
-      // Get the existing cart items from local storage
       const existingCartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
     
-      // Check if the product is already in the cart
       const existingCartItem = existingCartItems.find(item => item.productId === productId);
     
-      // If the product is already in the cart, update its quantity
       if (existingCartItem) {
         existingCartItem.quantity += quantity;
       } else {
-        // If the product is not in the cart, add it to the cart items
         existingCartItems.push({ productId, quantity,product_name,images,price});
       }
     
-      // Save the updated cart items back to local storage
       localStorage.setItem('storedProducts', JSON.stringify(existingCartItems));
-    
       console.log('Product added to cart:', productId);
     };
     

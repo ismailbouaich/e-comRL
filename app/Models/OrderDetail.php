@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class OrderDetail extends Model
 {
@@ -11,7 +12,7 @@ class OrderDetail extends Model
 
 
     protected $fillable = [
-        'order_id', 'product_id', 'total_price', 'amount','city', 'address','zip_code',
+        'order_id', 'product_id', 'total_price', 'quantity','city', 'address','zip_code',
 
     ];
 
@@ -21,8 +22,20 @@ class OrderDetail extends Model
     }
 
     public function product()
-{
-    return $this->belongsTo(Product::class);
-}
+        {
+            return $this->belongsToMany(Product::class)->withPivot('quantity');
+        }
+
+    public static function bestSellingProduct()
+    {
+        
+        return Product::select('products.*', DB::raw('SUM(order_details.quantity) as total_quantity'))
+        ->join('order_details','products.id','=','order_details.product_id')
+        ->groupBy('products.id')
+        ->orderBy('total_quantity', 'desc')
+        ->with('images', 'category', 'discounts')
+        ->get();
+    }
+
     
 }

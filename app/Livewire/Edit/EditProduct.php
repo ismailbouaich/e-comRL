@@ -15,60 +15,76 @@ class EditProduct extends Component
 {
     use WithFileUploads;
 
-
     public $product;
     public $product_name, $description, $price, $stock_quantity, $category_id;
     public $images = [];
+    public $newImages = [];
     public $categories;
 
     public function mount($productId){
         $product = Product::find($productId);
-        $this->product=$product;
-        $this->product_name=$product->product_name;
-        $this->description=$product->description;
-        $this->price=$product->price;
-        $this->stock_quantity=$product->stock_quantity;
-        $this->category_id=$product->category_id;
-        $this->images = $product->images; // Assuming this is how 
-        $this->categories = Category::all(); // Assuming you have a Role model
-
+        $this->product = $product;
+        $this->product_name = $product->product_name;
+        $this->description = $product->description;
+        $this->price = $product->price;
+        $this->stock_quantity = $product->stock_quantity;
+        $this->category_id = $product->category_id;
+        $this->images = $product->images;
+        $this->categories = Category::orderBy('name', 'desc')->latest()->get();
     }
-    public function updatedImages()
+
+    public function updatedNewImages()
     {
-        // Assuming $this->images holds the new images and $this->product->images holds the old images
-        foreach ($this->product->images as $oldImage) {
-            Storage::delete($oldImage->file_path); // Delete the old image file
-            $oldImage->delete(); // Delete the old image record
-        }
-    
-        // Process new images
-        foreach ($this->images as $image) {
-            $path = $image->store('images', 'public');
-            $this->product->images()->create(['file_path' => $path]);
+        $this->validate([
+            'newImages.*' => 'image|max:10240', // 10MB Max
+        ]);
+    }
+    public function removeImage($imageId)
+    {
+        $image = Image::find($imageId);
+
+        if ($image) {
+            Storage::disk('public')->delete($image->file_path);
+            $image->delete();
+            $this->images = $this->product->images; // Refresh the images collection
         }
     }
+
     public function save()
-{
-    $this->validate([
-        'product_name' => 'required|string|max:255',
-        'description' => 'required|string',
-        'price' => 'required|numeric',
-        'stock_quantity' => 'required|integer',
-        'category_id' => 'required|exists:categories,id',
-    ]);
+    {
+        $this->validate([
+            'product_name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'price' => 'required|numeric',
+            'stock_quantity' => 'required|integer',
+            'category_id' => 'required|exists:categories,id',
+        ]);
 
-    $this->product->update([
-        'product_name' => $this->product_name,
-        'description' => $this->description,
-        'price' => $this->price,
-        'stock_quantity' => $this->stock_quantity,
-        'category_id' => $this->category_id,
-    ]);
-  
+        $this->product->update([
+            'product_name' => $this->product_name,
+            'description' => $this->description,
+            'price' => $this->price,
+            'stock_quantity' => $this->stock_quantity,
+            'category_id' => $this->category_id,
+        ]);
 
-    session()->flash('message', 'Product updated successfully.');
-}
+        // Process new images
+        if (!empty($this->newImages)) {
+            // Delete old images
+            foreach ($this->product->images as $oldImage) {
+                Storage::disk('public')->delete($oldImage->file_path);
+                $oldImage->delete();
+            }
 
+            // Save new images
+            foreach ($this->newImages as $image) {
+                $path = $image->store('images', 'public');
+                $this->product->images()->create(['file_path' => $path]);
+            }
+        }
+
+        session()->flash('message', 'Product updated successfully.');
+    }
 
 
     public function render()

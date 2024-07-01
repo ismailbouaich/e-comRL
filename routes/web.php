@@ -66,7 +66,7 @@ Route::view('profile', 'profile')
 
     Route::view('create/discount', 'forms.create.create-discount')
     ->middleware(['auth'])
-    ->name('create-discount');
+    ->name('create.discount');
 
     Route::view('discount/apply', 'forms.apply-discount')
     ->middleware(['auth'])
@@ -74,23 +74,30 @@ Route::view('profile', 'profile')
 
     Route::view('create/order', 'forms.create.create-order')
     ->middleware(['auth'])
-    ->name('create-order');
+    ->name('create.order');
 
     Route::view('product/edit/{productId}', 'forms.edit.edit-product')
     ->middleware(['auth'])
     ->name('products.edit');
 
+    Route::view('user/edit/{userId}', 'forms.edit.edit-user')
+    ->middleware(['auth'])
+    ->name('users.edit');
+
     Route::view('order/edit/{orderId}', 'forms.edit.edit-order')
     ->middleware(['auth'])
     ->name('orders.edit');
 
-    Route::view('/users/{id}','show.user-show')
+    Route::view('/users/{userId}','forms.show.user-show')
     ->middleware(['auth'])
     ->name('users.show');
-    Route::view('/orders/{id}', 'show.order-show')
+
+    Route::view('/orders/{id}', 'forms.show.order-show')
     ->middleware(['auth'])
     ->name('orders.show');
-    Route::view('/products/{id}', 'show.product-show')
+
+
+    Route::view('/products/{productId}', 'forms.show.product-show')
     ->middleware(['auth'])
     ->name('products.show');
 

@@ -2,18 +2,19 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Foundation\Events\Dispatchable;
+use Illuminate\Queue\SerializesModels;
+use App\Models\Order;
+
 use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Messages\BroadcastMessage;
-
-
 class OrderNotification extends Notification
 {
-    use Queueable;
+    use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    protected $order;
+    public $order;
     /**
      * Create a new notification instance.
      */
@@ -26,11 +27,16 @@ class OrderNotification extends Notification
      *
      * @return array<int, string>
      */
-    public function via(object $notifiable)
+    public function via($notifiable)
     {
-        return ['database','broadcast'];
+        return ['database'];
     }
 
+   
+    public function broadcastOn(): PrivateChannel
+    {
+        return new PrivateChannel('orders.' . $this->order->customer_id);
+    }
     /**
      * Get the mail representation of the notification.
      */
@@ -48,12 +54,5 @@ class OrderNotification extends Notification
             'order_date' => $this->order->created_at,
         ];
     }
-    public function toBroadcast($notifiable)
-    {
-        return new BroadcastMessage([
-            'order_id' => $this->order->id,
-            'order_amount' => $this->order->total_price,
-            'order_date' => $this->order->created_at->toDateTimeString(),
-        ]);
-    }
+   
 }

@@ -6,6 +6,8 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
 
+import axios from 'axios';
+import React, { useEffect, useState } from 'react'
 const Swipe = () => {
     const data = [
         {id: 1, name: 'jamal', email: 'sa3d@ddd.xom'},
@@ -13,6 +15,20 @@ const Swipe = () => {
         {id: 3, name: 'karo', email: 'karo@ddd.xom'},
         {id: 4, name: 'jarp', email: 'jarp@ddd.xom'},
     ];
+
+    const [bestsellingPrd,setBestsellingPrd]=useState([]);
+
+    useEffect(()=>{
+        axios.get(`/product/mostSelling`).then(
+           (response)=>{
+            setBestsellingPrd(response.data)
+           } 
+        ).catch((error)=>{
+
+            console.error('Error fetching products:', error);
+
+        })
+    },[]);
 
     return (
  
@@ -23,11 +39,11 @@ const Swipe = () => {
             onSwiper={(swiper) => console.log(swiper)}
             className='w-[100%]'
         >
-            {data.map((item) => (
-                <SwiperSlide key={item.id} className='h-[200px] bg-blue-800 flex items-center justify-center'>
+            {bestsellingPrd.map((item ,index) => (
+                <SwiperSlide key={index} className='h-[200px] bg-blue-800 flex items-center justify-center'>
                     <div className="card bg-white p-4 rounded-lg shadow-lg text-center w-[90%] h-[90%] flex flex-col justify-around">
-                        <h3 className="text-lg font-bold">{item.name}</h3>
-                        <p className="text-gray-600">{item.email}</p>
+                        <h3 className="text-lg font-bold">{item.product_name}</h3>
+                        <p className="text-gray-600">{item.price}</p>
                     </div>
                 </SwiperSlide>
             ))}

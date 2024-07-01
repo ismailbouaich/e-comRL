@@ -13,16 +13,15 @@ return new class extends Migration
     {
         Schema::create('discounts', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('product_id');
             $table->string('name');
             $table->string('code')->unique();
-            $table->enum('discount_type', ['percentage', 'fixed_amount']);
+            $table->enum('discount_type', ['percentage', 'fixed']);
             $table->decimal('discount_value', 8, 2);
-            $table->dateTime('start_date');
-            $table->dateTime('end_date')->nullable();
+            $table->date('start_date');
+            $table->date('end_date');
             $table->boolean('is_active')->default(true);
-            $table->decimal('minimum_order_amount', 8, 2)->nullable();
-            $table->boolean('applies_to_all_products')->default(true);
-            $table->json('product_ids')->nullable();
+            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
             $table->timestamps();
         });
     }

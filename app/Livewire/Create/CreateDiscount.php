@@ -6,7 +6,7 @@ use App\Models\Product;
 use Livewire\Component;
 use App\Models\Discount;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 
 class CreateDiscount extends Component
@@ -18,61 +18,49 @@ class CreateDiscount extends Component
     public $start_date;
     public $end_date;
     public $is_active = true;
-    public $minimum_order_amount;
-    public $applies_to_all_products = true;
-    public $product_ids = [];
+    public $product_id;
     public $products = [];
-
 
     public function rules()
     {
         return [
             'name' => 'required|string',
-            'code' => 'required|string|unique:discounts,code',
-            'discount_type' => 'required|in:percentage,fixed_amount',
+            'code' => ['required', 'string', 'unique:discounts,code'],
+            'discount_type' => ['required', Rule::in(['percentage', 'fixed'])],
             'discount_value' => 'required|numeric|min:0.01',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after:start_date',
-            'minimum_order_amount' => 'nullable|numeric|min:0.01',
-            'applies_to_all_products' => 'required|boolean',
-            'product_ids' => 'nullable|array',
+            'product_id' => 'required|exists:products,id',
         ];
     }
 
     public function createDiscount()
     {
-      $this->validate();
+        $validatedData = $this->validate();
     
-      $data = $this->all();  // Get all validated data
+        // Create the discount
+        $discount = Discount::create($validatedData);
     
-      // Encode product_ids before saving
-      if (isset($data['product_ids']) && !empty($data['product_ids'])) {
-        $data['product_ids'] = json_encode($data['product_ids']);
-      } else {
-        // Set product_ids to an empty string if not provided
-        $data['product_ids'] = '';
-      }
-    
-      $discount = Discount::create($data);
-    
-      $this->reset(); // Reset form fields after successful creation
+        // Reset form fields after successful creation
+        $this->reset();
     }
-public function generateCode()
-{
-    $this->code = Str::random(8); // Generate a random alphanumeric code
-    $this->code = strtoupper($this->code); // Convert to uppercase for better readability (optional)
+
+    public function generateCode()
+    {
+        do {
+            $this->code = strtoupper(Str::random(8)); // Generate a random alphanumeric code
+            $existingDiscount = Discount::where('code', $this->code)->first();
+        } while ($existingDiscount); // Repeat if the code already exists
     
-    // Check for code uniqueness (optional, but recommended for security)
-    $existingDiscount = Discount::where('code', $this->code)->first();
-    if ($existingDiscount) {
-        $this->addError('code', 'Generated code already exists. Please try again.');
-        return;
+        // Clear any previous code errors
+        $this->resetErrorBag('code');
     }
-}
-public function mount()
-{
-    $this->products = Product::all(); // Assuming Product model
-}
+
+    public function mount()
+    {
+        $this->products = Product::all();
+    }
+
     public function render()
     {
         return view('livewire.create.create-discount');
