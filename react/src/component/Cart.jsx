@@ -1,28 +1,28 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import BingMap from './BingMap'; // Assuming BingMap component is imported
+import BingMap from './BingMap';
 import { useNavigate } from 'react-router';
+import { addToCart, removeFromCart, updateQuantity, setCart, createCartItemsOrder } from '../redux/actions/cartActions';
 
-
-const Cart = ({ user }) => {
+const Cart = () => {
+  const dispatch = useDispatch();
+  const products = useSelector(state => state.cart.cart);
+  const { loading, stripeUrl } = useSelector(state => state.cart);
   const [checkAll, setCheckAll] = useState(false);
-  const [products, setProducts] = useState([]);
-  const [orderItems, setOrderItems] = useState([]); // Array to hold selected items for order
+  const [orderItems, setOrderItems] = useState([]);
   const [order, setOrder] = useState({
-    quantity: '', // Adjust as needed
     address: '',
     zip_code: '',
     city: '',
   });
-  
 
-  const [loading, setLoading] = useState(false);
-  const [loadKey, setLoadKey] = useState(Date.now()); // For potential BingMap re-rendering
+  const [loadKey, setLoadKey] = useState(Date.now());
   const [show, setShow] = useState(false);
-  const [stripeSessionId, setStripeSessionId] = useState();
-  const [stripe_url, setStripe_url] = useState();
+
+  const user = useSelector((state) => state.user.user);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -35,231 +35,197 @@ const Cart = ({ user }) => {
       city,
     }));
   };
-useEffect(() => {
-    setLoadKey(Date.now()); // Update BingMap key for potential re-rendering
-  }, []);
 
+  const navigate = useNavigate();
 
-const navigate = useNavigate();
-   
-    
   useEffect(() => {
     if (!localStorage.getItem('token')) {
-      return navigate('/login')
+      navigate('/login');
     }
-  });
+  }, [navigate]);
 
   useEffect(() => {
-    if (stripe_url) {
-      window.location.href = stripe_url; // Redirect to Stripe checkout
+    if (stripeUrl) {
+      window.location.href = stripeUrl;
     }
-  }, [stripe_url, stripeSessionId]);
-   // Trigger redirect only on url/session changes
-  
+  }, [stripeUrl]);
 
-
-  useEffect(() => {
-    // Retrieve cart items from local storage
-    const storedProducts = JSON.parse(localStorage.getItem('products')) || [];
-    setProducts(storedProducts);
-  }, []);
-
-  const removeFromCart = (id) => {
+  const getCartItems = (userId) => {
+    const key = `cart_${userId}`;
+    return JSON.parse(localStorage.getItem(key)) || [];
   };
+
+  useEffect(() => {
+    if (user && user.id) {
+      const storedProducts = getCartItems(user.id);
+      dispatch(setCart(storedProducts));
+    }
+  }, [dispatch, user]);
 
   const handleCheckAllChange = (e) => {
     const checked = e.target.checked;
-    setCheckAll(checked); // Update "Check All" state
-    setOrderItems(prevOrderItems =>
-      checked
-        ? products.map(item => ({ ...item, quantity: 1, totalPrice: item.price })) // Add all with quantity 1
-        : [] // Clear orderItems if unchecked
-    );
+    setCheckAll(checked);
+    setOrderItems(checked ? products.map(item => ({ ...item, quantity: 1, totalPrice: item.price })) : []);
   };
 
-   const handleCheckboxChange = (e, item) => {
+  const handleCheckboxChange = (e, product) => {
     const checked = e.target.checked;
-    setOrderItems(prevOrderItems => {
-      if (checked) {
-        const existingItem = prevOrderItems.find(orderItem => orderItem.id === item.id);
-        if (!existingItem) {
-          return [...prevOrderItems, { ...item, quantity: 1, totalPrice: item.price }];
-        }
-      } else {
-        return prevOrderItems.filter(orderItem => orderItem.id !== item.id);
-      }
-      return prevOrderItems;
-    });
+    if (checked) {
+      setOrderItems([...orderItems, { ...product, quantity: 1, totalPrice: product.price }]);
+    } else {
+      setOrderItems(orderItems.filter(item => item.id !== product.id));
+    }
   };
 
   const handleQuantityChange = (e, itemId) => {
     const newQuantity = parseInt(e.target.value, 10);
     if (isNaN(newQuantity) || newQuantity < 1) {
-      console.error('Invalid quantity:', newQuantity);
       return;
     }
 
-    setOrderItems(prevOrderItems =>
-      prevOrderItems.map(item => {
-        if (item.id === itemId) {
-          const totalPrice = newQuantity * item.price;
-          return { ...item, quantity: newQuantity, totalPrice: totalPrice };
-        }
-        return item;
-      })
-    );
+    dispatch(updateQuantity(itemId, newQuantity));
+    setOrderItems(orderItems.map(item =>
+      item.id === itemId ? { ...item, quantity: newQuantity, totalPrice: newQuantity * item.price } : item
+    ));
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
 
     try {
       const orderData = {
         ...order,
-        // Send all selected items
         customer_id: user.id,
         customer_name: user.name,
-        cart_items: products.map(item => ({
-          product_id: item.productId,
-          quantity:item.quantity,
-          price:item.price
-          // Include other item properties as needed
+        products: orderItems.map(item => ({
+          product_id: item.id,
+          quantity: item.quantity,
+          price: item.price,
         })),
       };
 
-      const response = await axios.post(`/cart/buy`, orderData);
-
-      // Handle Stripe response
-      setStripe_url(response.data.stripe_url);
-      setStripeSessionId(response.data.session_id);
+      dispatch(createCartItemsOrder(orderData));
     } catch (error) {
       console.error('Error submitting order:', error);
       alert('An error occurred while submitting the order. Please try again later.');
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
     <div className="cart">
-    <h2>Your Shopping Cart</h2>
-    <table className="cart-items table table-bordered table-hover">
-      <thead>
-        <tr>
-          <th>
-            <input
-              type="checkbox"
-              id="check-all"
-              onChange={handleCheckAllChange}
-              checked={checkAll}
-            />
-            <label htmlFor="check-all">Check All</label>
-          </th>
-          <th className="text-center">Item</th>
-          <th className="text-center">Price</th>
-          <th className="text-center">Qty (Cart)</th>
-          <th className="text-center">Qty (Order)</th>
-          <th className="text-center">Total</th>
-          <th className="text-center">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {products.map((item, index) => (
-          <tr className="cart-item" key={index}>
-            <td>
+      <h2>Your Shopping Cart</h2>
+      <table className="cart-items table table-bordered table-hover">
+        <thead>
+          <tr>
+            <th>
               <input
                 type="checkbox"
-                id={`order-checkbox-${item.id}`}
-                checked={checkAll || orderItems.some(orderItem => orderItem.id === item.id)}
-                onChange={(e) => handleCheckboxChange(e, item)}
+                id="check-all"
+                onChange={handleCheckAllChange}
+                checked={checkAll}
               />
-              <label htmlFor={`order-checkbox-${item.id}`} className="ms-2">
-                Add to Order
-              </label>
+              <label htmlFor="check-all">Check All</label>
+            </th>
+            <th className="text-center">Item</th>
+            <th className="text-center">Price</th>
+            <th className="text-center">Qty (Cart)</th>
+            <th className="text-center">Qty (Order)</th>
+            <th className="text-center">Total</th>
+            <th className="text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.map((item) => (
+            <tr className="cart-item" key={item.id}>
+              <td>
+                <input
+                  type="checkbox"
+                  id={`order-checkbox-${item.id}`}
+                  checked={orderItems.some(orderItem => orderItem.id === item.id)}
+                  onChange={(e) => handleCheckboxChange(e, item)}
+                />
+                <label htmlFor={`order-checkbox-${item.id}`} className="ms-2">
+                  Add to Order
+                </label>
+              </td>
+              <td className="text-center">{item.productName}</td>
+              <td className="text-center">
+                {typeof item.price === 'number' ? `$${item.price.toFixed(2)}` : 'N/A'}
+              </td>
+              <td className="text-center">
+                <input
+                  type="number"
+                  min="1"
+                  className="form-control form-control-sm"
+                  value={item.quantity}
+                  onChange={(e) => handleQuantityChange(e, item.id)}
+                />
+              </td>
+              <td className="text-center">
+                {orderItems.some(orderItem => orderItem.id === item.id)
+                  ? orderItems.find(orderItem => orderItem.id === item.id).quantity
+                  : '-'}
+              </td>
+              <td className="text-center">
+                {orderItems.some(orderItem => orderItem.id === item.id)
+                  ? `$${parseFloat(orderItems.find(orderItem => orderItem.id === item.id).totalPrice).toFixed(2)}`
+                  : '-'}
+              </td>
+              <td className="text-center">
+                <Button size="sm" variant="danger" onClick={() => dispatch(removeFromCart(item.id))}>
+                  Remove
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colSpan={4}>
+              <p>
+                Order Subtotal: $
+                {orderItems.length > 0
+                  ? orderItems.reduce((total, item) => {
+                      const totalPrice = parseFloat(item.totalPrice);
+                      return isNaN(totalPrice) ? total : total + totalPrice;
+                    }, 0).toFixed(2)
+                  : 'No items selected'}
+              </p>
             </td>
-            <td className="text-center">{item.product_name}</td>
-            <td className="text-center">${(item.quantity * item.price).toFixed(2)}</td>
-            <td className="text-center">
-              <input
-                type="number"
-                min="1"
-                className="form-control form-control-sm"
-                value={orderItems.find(orderItem => orderItem.id === item.id)?.quantity || 0}
-                onChange={(e) => handleQuantityChange(e, item.id)}
-              />
-            </td>
-            <td className="text-center">
-              {orderItems.some(orderItem => orderItem.id === item.id)
-                ? orderItems.find(orderItem => orderItem.id === item.id).quantity
-                : '-'}
-            </td>
-            <td className="text-center">
-              ${(item.quantity * item.price).toFixed(2)}
-            </td>
-            <td className="text-center">
-              <Button size="sm" variant="danger" onClick={() => removeFromCart(item.id)}>
-                Remove
+            <td colSpan={2}>
+              <Button variant="primary" onClick={handleShow} disabled={orderItems.length === 0}>
+                Select Location & Checkout
               </Button>
             </td>
           </tr>
-        ))}
-      </tbody>
-      <tfoot>
-        <tr>
-          <td colSpan={4}>
-            <p>
-              {/* Order Subtotal: $
-              {orderItems.length > 0
-                ? orderItems.reduce((total, item) => => {
-        const totalPrice = parseFloat(item.totalPrice);
-        return isNaN(totalPrice) ? total : total + totalPrice;
-      }, 0).toFixed(2)
-                : 'No items selected'} */}
-                Order Subtotal: $
-  {orderItems.length > 0
-    ? orderItems.reduce((total, item) => {
-        const totalPrice = parseFloat(item.totalPrice);
-        return isNaN(totalPrice) ? total : total + totalPrice;
-      }, 0).toFixed(2)
-    : 'No items selected'}
-            </p>
-          </td>
-          <td colSpan={2}>
-            <Button variant="primary" onClick={handleShow} disabled={orderItems.length === 0}>
-              Select Location & Checkout
-            </Button>
-          </td>
-        </tr>
-      </tfoot>
-    </table>
+        </tfoot>
+      </table>
 
-    <Modal show={show} onHide={handleClose}>
-      <Modal.Header closeButton>
-        <Modal.Title>Select a Location and Payment Method</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <BingMap key={loadKey} onLocationSelect={handleLocationSelect} />
-        <hr />
-        <p>Delivery Address:</p>
-        <ul>
-          <li>{order.address}</li>
-          <li>{order.zip_code}</li>
-          <li>{order.city}</li>
-        </ul>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
-          Cancel
-        </Button>
-        <Button variant="primary" onClick={handleSubmit} disabled={loading || !order.address}>
-          {loading ? 'Processing...' : 'Checkout'}
-        </Button>
-      </Modal.Footer>
-    </Modal>
-  </div>
-  
-);
+      <Modal show={show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Select a Location and Payment Method</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <BingMap key={loadKey} onLocationSelect={handleLocationSelect} />
+          <hr />
+          <p>Delivery Address:</p>
+          <ul>
+            <li>{order.address}</li>
+            <li>{order.zip_code}</li>
+            <li>{order.city}</li>
+          </ul>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleSubmit} disabled={loading || !order.address}>
+            {loading ? 'Processing...' : 'Checkout'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </div>
+  );
 };
 
 export default Cart;

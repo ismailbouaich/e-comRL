@@ -16,7 +16,11 @@ use App\Livewire\Tables\UsersTables;
 |
 */
 
-Route::view('/', 'welcome');
+
+
+Route::view('/', 'dashboard')
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
@@ -68,13 +72,15 @@ Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('create.discount');
 
-    Route::view('discount/apply', 'forms.apply-discount')
-    ->middleware(['auth'])
-    ->name('apply-discount');
+  
 
     Route::view('create/order', 'forms.create.create-order')
     ->middleware(['auth'])
     ->name('create.order');
+
+    Route::view('create/brand', 'forms.create.create-brand')
+    ->middleware(['auth'])
+    ->name('create.brand');
 
     Route::view('product/edit/{productId}', 'forms.edit.edit-product')
     ->middleware(['auth'])

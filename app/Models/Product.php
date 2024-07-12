@@ -11,7 +11,7 @@ class Product extends Model
     use HasFactory;
 
     protected $table = 'products'; // Name of the product table
-    protected $fillable = ['product_name', 'description', 'price', 'stock_quantity','category_id'];
+    protected $fillable = ['product_name', 'description', 'price', 'stock_quantity','brand_id','category_id'];
         
     public function orderDetails()
     {
@@ -37,14 +37,19 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
-
-   
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
+    }
 
     public function scopeSearch($query, $value) {
         $query->where('product_name', 'like', "%{$value}%")
               ->orWhereHas('category', function($query) use ($value) {
                   $query->where('name', 'like', "%{$value}%");
               })
+              ->orWhereHas('brand', function($query) use ($value) {
+                $query->where('name', 'like', "%{$value}%");
+            })
               ->orWhere('price', 'like', "%{$value}%");
     }
 

@@ -1,6 +1,5 @@
-import  { useState, useEffect, useContext } from 'react';
+import  {  useEffect, useContext } from 'react';
 import { Routes, Route } from 'react-router-dom';
-import axios from 'axios';
 import Nav from './Nav'
 import Home from '../component/home/Home';
 import Login from '../component/Login';
@@ -16,6 +15,8 @@ import { ThemeContext } from '../theme/ThemeContext';
 import Success from '../component/Success';
 import Confirmed  from '../component/Confirmed';
 
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchUserData } from '../redux/actions/userActions';
 
 
 
@@ -26,44 +27,33 @@ import Confirmed  from '../component/Confirmed';
 const Header = () => {
   const { darkMode } = useContext(ThemeContext); // Access darkMode from ThemeContext
 
-  const [user, setUser] = useState({});
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user.user);
 
+
+ 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await axios.get('/user');
-        setUser(response.data);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    fetchUserData();
-  }, []);
-
+    const token = localStorage.getItem('token');
+    if (token) {
+      dispatch(fetchUserData());
+    }
+  }, [dispatch]);
   return (
-    <div className={`flex flex-col min-h-screen header ${darkMode ? 'dark' : 'light'}`}>
-      <Nav user={user} setUser={setUser} />
-      
-      {user && ( // Conditionally render routes only if user data is available
-     
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login setUser={setUser} />} />
-          <Route path="/register" element={<Register setUser={setUser} />} />
-          <Route path="/profile" element={<Profile user={user} />} />
-          <Route path="/forget" element={<Forgot />} />
-          <Route path="/store" element={<Store user={user} />} />
-          {/* <Route path="/edit/user/:id" element={<EditUser />} /> */}
-          <Route path="/product/:id" element={<Product user={user} />} />
-          <Route path="/cart" element={<Cart user={user} />} />
-          <Route path="/success/:session_id" element={<Success />} />
-          <Route path="/confirmed" element={<Confirmed />} />
-
-        </Routes>
-        
-      )}
-    </div>
+    <div className={darkMode ? 'dark-mode' : 'light-mode'}>
+    <Nav />
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route path="/profile" element={user ? <Profile /> : <Login />} />
+      <Route path="/forget" element={<Forgot />} />
+      <Route path="/store" element={<Store />} />
+      <Route path="/product/:id" element={<Product />} />
+      <Route path="/cart" element={<Cart />} />
+      <Route path="/success" element={<Success />} />
+      <Route path="/confirmed" element={<Confirmed />} />
+    </Routes>
+  </div>
   );
 };
 

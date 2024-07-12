@@ -9,12 +9,14 @@
                 <div class="mt-2">
                   <input type="text" wire:model="product_name" name="product_name" placeholder="Product Name" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                 </div>
+                <x-input-error :messages="$errors->get('product_name')" class="mt-2" />
               </div>
               <div class="sm:col-span-2">
                 <label for="price" class="block text-sm font-medium leading-6 text-gray-900">Price</label>
                 <div class="mt-2">
                   <input type="number" wire:model="price" name="price" placeholder="Price" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                 </div>
+                <x-input-error :messages="$errors->get('price')" class="mt-2" />
               </div>
       
               <div class="sm:col-span-2">
@@ -22,14 +24,18 @@
                 <div class="mt-2">
                   <input type="number" wire:model="stock_quantity" name="stock_quantity" placeholder="Stock Quantity"class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6">
                 </div>
+                <x-input-error :messages="$errors->get('stock_quantity')" class="mt-2" />
               </div>
               <div class="col-span-full">
                 <label for="description" class="block text-sm font-medium leading-6 text-gray-900">Description</label>
                 <div class="mt-2">
                   <textarea wire:model="description" rows="3" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"></textarea>
                 </div>
+                
                 <p class="mt-3 text-sm leading-6 text-gray-600">Write a description for the Product.</p>
+                <x-input-error :messages="$errors->get('description')" class="mt-2" />
               </div>
+             
               <div class="sm:col-span-3">
                 <label for="categories" class="block text-sm font-medium leading-6 text-gray-900">Categories</label>
                 <div class="mt-2">
@@ -39,7 +45,21 @@
                   @endforeach
                   </select>
                 </div>
+                <x-input-error :messages="$errors->get('category_id')" class="mt-2" />
               </div>
+
+              <div class="sm:col-span-3">
+                <label for="brands" class="block text-sm font-medium leading-6 text-gray-900">Brands</label>
+                <div class="mt-2">
+                  <select  wire:model="brand_id" class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6">
+                     @foreach ($brands as $brand)
+                      <option value="{{ $brand->id }}">{{ $brand->name }}</option>
+                  @endforeach
+                  </select>
+                </div>
+                <x-input-error :messages="$errors->get('brand_id')" class="mt-2" />
+              </div>
+
 
 
             <div class="col-span-full">
@@ -68,6 +88,7 @@
                 @endif
             
         </div>
+        
     </div>
 </div>
 

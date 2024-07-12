@@ -1,5 +1,5 @@
 <div>
-    <div id="customer-chart"></div>
+    <div id="customer-chart" class=""></div>
        
   
     <script>
