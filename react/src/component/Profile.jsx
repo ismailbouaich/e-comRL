@@ -1,12 +1,15 @@
 import React,{useEffect}from 'react'
 import { useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 
 
-const Profile = ({user}) => {
+
+const Profile = () => {
   const navigate = useNavigate();
    
+  const user = useSelector((state) => state.user.user);
     
   useEffect(() => {
     if (!localStorage.getItem('token')) {
@@ -21,9 +24,9 @@ const Profile = ({user}) => {
         <h3 className="text-center mb-4">User Profile</h3>
         <ul className="list-group">
         <li className="list-group-item">Name: {user.name}</li>
-            <li className="list-group-item">Email: {user.email}</li>
+            <li className="list-group-item">Email: {user.email} </li>
         </ul>
-        <Link to={`/edit/user/${user.id}`} className='btn btn-primary'>Edit</Link>
+        <Link to={`/edit/user/}`} className='btn btn-primary'>Edit</Link>
 
       </div>
     </div>

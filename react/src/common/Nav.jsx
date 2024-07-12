@@ -1,5 +1,7 @@
 import  { useState, useCallback ,useEffect} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { logoutUser } from '../redux/actions/userActions';
 
 
 const links=[
@@ -20,7 +22,7 @@ const Nav = () => {
 
     const navigate=useNavigate();
     
-
+    const dispatch = useDispatch();
 
     const toggleMenu = useCallback(() => {
         setIsOpen(!isOpen);
@@ -42,10 +44,9 @@ const Nav = () => {
     }, [isOpen]);
 
     const handleLogout = () => {
-        localStorage.removeItem('token');
+        dispatch(logoutUser());
         navigate('/login');
-        
-    };
+      };
 
     const isLoggedIn = !!localStorage.getItem('token');
 
@@ -101,7 +102,7 @@ const Nav = () => {
     return (
         <header className='w-full sm:h-20 lg:h-24 relative z-20'>
             <div className='h-16flex items-center justify-center mx-auto max-w-[1920px] h-full w-full'>
-            <nav className="relative p-5 px-4 py-4 flex justify-between items-center bg-white">
+            <nav className="relative p-5 px-4 py-4 flex justify-between items-center bg-white border-b-2">
                 <a className="text-3xl font-bold leading-none" href="#">
                     Logo
                 </a>

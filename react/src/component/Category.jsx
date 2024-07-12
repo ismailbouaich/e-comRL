@@ -1,29 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import "./category.scss"
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
+import { fetchCategories } from '../redux/actions/categoryActions';
+import { selectCategories, selectLoading, selectError } from '../redux/selectors/categorySelectors';
 
 const Category = ({onSelectCategory}) => {
 
-    const[categories,setCategories]=useState([]);
+  const dispatch = useDispatch();
+  const categories = useSelector(selectCategories)||[];
+  const loading = useSelector(selectLoading);
+  const error = useSelector(selectError);
 
-    useEffect(() => {
-        // Fetch categories and products here
-        axios.get('/categories')
-          .then((response) => {
-            setCategories(response.data);
-          })
-          .catch((error) => {
-            console.error('Error fetching categories:', error);
-          })},[]);
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
   return (
-     <div className="category-list">
-      {categories.map((category) => (
-        <div key={category.id} onClick={() => onSelectCategory(category.id)} className="category-item">
-          {category.name}
-        </div>
-      ))}
+    <div className="flex-shrink-0 rtl:pl-24 hidden lg:block w-96">
+     
+
+
+        {categories.map((item,index)=>{
+          
+            
+                    <label className="flex items-center space-x-2">
+        <input type="checkbox" className="form-checkbox" />
+        <span>{item}</span>
+        </label>
+          
+        })}
+     
+       
+     
+      
     </div>
-  )
+  );
+  
 }
 
 export default Category;

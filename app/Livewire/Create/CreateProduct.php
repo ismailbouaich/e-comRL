@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Create;
 
+use App\Models\Brand;
 use App\Models\Category;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -12,15 +13,17 @@ class CreateProduct extends Component
 {
     use WithFileUploads;
 
-    public $product_name, $description, $price, $stock_quantity, $category_id;
+    public $product_name, $description, $price, $stock_quantity, $category_id,$brand_id;
     public $images = [];
-    public $categories;
+    public $categories ,$brands;
     protected $rules = [
         'product_name' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric',
             'stock_quantity' => 'required|integer',
             'category_id' => 'required|integer',
+            'brand_id' => 'required|integer',
+
             'images.*' => 'image|max:1024', // 1MB Max per image
     ];
 
@@ -41,10 +44,11 @@ class CreateProduct extends Component
             'price' => $this->price,
             'stock_quantity' => $this->stock_quantity,
             'category_id' => $this->category_id,
+            'brand_id' => $this->brand_id,
         ]);
 
         foreach ($this->images as $image) {
-            $path = $image->store('public/images');
+            $path = $image->store('/images');
             Image::create([
                 'product_id' => $product->id,
                 'file_path' => $path,
@@ -53,15 +57,18 @@ class CreateProduct extends Component
         }
 
         session()->flash('message', 'Product successfully created with images.');
+        return $this->reset(['product_name', 'description', 'price', 'stock_quantity',]);
+
     }
 
     public function cancel()  {
-        return  $this->reset(['product_name', 'description', 'price', 'stock_quantity', 'category_id','file_path','product_id']);
+        return  $this->reset(['product_name', 'description', 'price', 'stock_quantity','file_path','product_id']);
   
       }
     public function mount()
     {
-        $this->categories = Category::all(); // Assuming you have a Role model
+        $this->categories = Category::all(); 
+        $this->brands=Brand::all();
     }
     public function render()
     {

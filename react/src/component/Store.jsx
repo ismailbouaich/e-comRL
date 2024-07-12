@@ -1,123 +1,157 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import Category from './Category';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
-import "./store.scss"
+import {
+  fetchProducts,
+  searchProducts,
+} from '../redux/actions/productActions';
+import {
+  selectProducts,
+  selectSearchResults,
+  selectLoading,
+  selectError,
+} from '../redux/selectors/productSelectors';
+import Sidebar from './side/Side';
 
-
-const Store = ({ user }) => {
-  const [products, setProducts] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+const Store = () => {
   const [searchKey, setSearchKey] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchError, setSearchError] = useState(false);
   const [typingTimeout, setTypingTimeout] = useState(null);
-
-  const navigate = useNavigate();
-   
-    
-  useEffect(() => {
-    if (!localStorage.getItem('token')) {
-      return navigate('/login')
-    }
+  const [filters, setFilters] = useState({
+    selectedCategories: [],
+    selectedBrands: [],
+    selectedColors: [],
   });
 
-  useEffect(() => {
-    axios.get(`/product/list`)
-      .then((response) => {
-        setProducts(response.data);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }, []); // Empty dependency array to fetch products only once on component mount
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
- 
-  const handleSearch = () => {
+  const products = useSelector(selectProducts) || [];
+  const searchResults = useSelector(selectSearchResults) || [];
+  const loading = useSelector(selectLoading);
+  const error = useSelector(selectError);
+  const user = useSelector((state) => state.user.user);
+
+  useEffect(() => {
+    if (!localStorage.getItem('token')) {
+      navigate('/login');
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    dispatch(fetchProducts());
+  }, [dispatch]);
+
+  const handleSearch = useCallback(() => {
     if (typingTimeout) {
       clearTimeout(typingTimeout);
     }
-    setSearchError(false); 
     const timeout = setTimeout(() => {
-      axios.get(`/search/${searchKey}`)
-        .then((response) => {
-          setSearchResults(response.data);
-        })
-        .catch((error) => {
-          console.error(error);
-          setSearchError(true); 
-          setSearchResults([]); 
-        });
-    }, 500); 
-
+      dispatch(searchProducts(searchKey));
+    }, 500);
     setTypingTimeout(timeout);
+  }, [dispatch, searchKey, typingTimeout]);
+
+  const handleFilterChange = useCallback((newFilters) => {
+    setFilters(newFilters);
+  }, []);
+
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) => {
+      const matchCategory =
+        filters.selectedCategories.length === 0 ||
+        (product.category && filters.selectedCategories.includes(product.category.name));
+      const matchBrand =
+        filters.selectedBrands.length === 0 ||
+        (product.brand && filters.selectedBrands.includes(product.brand.name));
+    
+
+      return matchCategory && matchBrand ;
+    });
+  }, [products, filters]);
+
+  const addToCart = (id, quantity, productName, images, price) => {
+    const userId = user.id;
+    const key = `cart_${userId}`;
+    const existingCartItems = JSON.parse(localStorage.getItem(key)) || [];
+    const existingCartItem = existingCartItems.find((item) => item.id === id);
+
+    if (existingCartItem) {
+      existingCartItem.quantity += quantity;
+    } else {
+      existingCartItems.push({ id, quantity, productName, images, price });
+    }
+
+    localStorage.setItem(key, JSON.stringify(existingCartItems));
+    console.log('Product added to cart:', id);
   };
 
-  const filteredProducts = selectedCategory
-    ? products.filter((product) => product.category.id === selectedCategory)
-    : products;
-
-   
-    const addToCart1 = (productId, quantity,product_name,images,price) => {
-      const existingCartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
-    
-      const existingCartItem = existingCartItems.find(item => item.productId === productId);
-    
-      if (existingCartItem) {
-        existingCartItem.quantity += quantity;
-      } else {
-        existingCartItems.push({ productId, quantity,product_name,images,price});
-      }
-    
-      localStorage.setItem('storedProducts', JSON.stringify(existingCartItems));
-      console.log('Product added to cart:', productId);
-    };
-    
-
-
-    return (
-      <div className="store-container">
-         <div className="category-row">
-      <Category onSelectCategory={setSelectedCategory} />
-    </div>
-    <div className="content-section">
-        <div className="search-bar">
-          <input 
-            type="text" 
-            onChange={(e) => setSearchKey(e.target.value)}
-            placeholder="Search products..." 
-          />
-          <button onClick={handleSearch}>Search</button>
+  return (
+    <div className="flex">
+      <Sidebar onFilterChange={handleFilterChange} />
+      <div className="w-3/4 p-6 my-1">
+        <div className="flex justify-between mb-4">
+          <div className="search-bar flex items-center space-x-2">
+            <input
+              type="text"
+              onChange={(e) => setSearchKey(e.target.value)}
+              value={searchKey}
+              placeholder="Search products..."
+              className="border border-gray-300 p-2 rounded-lg w-64"
+            />
+            <button onClick={handleSearch} className="p-2 bg-blue-500 text-white rounded-lg">
+              Search
+            </button>
+          </div>
+          <div className="flex gap-2">
+            <button className="bg-black text-white p-2 rounded">New</button>
+            <button className="border p-2 rounded">Price ascending</button>
+            <button className="border p-2 rounded">Price descending</button>
+            <button className="border p-2 rounded">Rating</button>
+          </div>
         </div>
-        {searchError && <p className="error-message">Not Found!</p>}
-        <div className="product-grid">
+        {loading && <p>Loading...</p>}
+        {error && <p className="text-red-500">Not Found!</p>}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {(searchResults.length > 0 ? searchResults : filteredProducts).map((product) => (
-            <div className='product-card' key={product.id}>
-              <div className='product-image'>
+            <div className="border p-4 rounded-lg shadow-md" key={product.id}>
+              <div className="mb-4">
                 <img
-                  src={`http://127.0.0.1:8000/storage/${(product.images && product.images.length > 0 && product.images[0].file_path)}`}
+                  src={`http://127.0.0.1:8000/storage/${
+                    product.images && product.images.length > 0 && product.images[0].file_path
+                  }`}
                   alt={product.product_name}
+                  className="w-full h-48 object-cover rounded-lg"
                 />
               </div>
-              <div className='product-info'>
-                <h5 className='product-title'>{product.product_name}</h5>
-                <p className='product-category'>{product.category && product.category.name}</p>
-                <p>{product.price}</p>
-                <p>{product.discounted_price}</p>
-                <Link to={`/product/${product.id}`} state={{ user }} className='btn-more'>Show More</Link>
-                <button type="button" onClick={() => addToCart1(product.id, 1,product.product_name,product.images,product.price)} className="btn-add-to-cart">Add to cart2</button>
+              <div>
+                <h5 className="font-bold mb-2">{product.product_name}</h5>
+                <p className="text-gray-500 mb-2">{product.category && product.category.name}</p>
+                <p className="mb-2">${product.price}</p>
+                <p className="mb-4">${product.discounted_price}</p>
+                <Link to={`/product/${product.id}`} state={{ user }} className="text-blue-500 underline">
+                  Show More
+                </Link>
+                <button
+                  type="button"
+                  onClick={() =>
+                    addToCart(product.id, 1, product.product_name, product.images, product.price)
+                  }
+                  className="mt-2 p-2 bg-green-500 text-white rounded-lg"
+                >
+                  Add to cart
+                </button>
               </div>
             </div>
           ))}
-           </div>
         </div>
       </div>
-    );
+    </div>
+  );
+};
+
+Store.propTypes = {
+  user: PropTypes.object,
 };
 
 export default Store;
-
-Store.propTypes={
-  user:PropTypes.object
-}

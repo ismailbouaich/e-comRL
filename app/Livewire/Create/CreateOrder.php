@@ -73,7 +73,7 @@ class CreateOrder extends Component
         $this->orderData['session_id'] = Str::random(8); // Generate a random alphanumeric code
         $this->orderData['session_id'] = strtoupper($this->orderData['session_id']); // Convert to uppercase for better readability (optional)
     
-    // Check for code uniqueness (optional, but recommended for security)
+    
     
     }
 

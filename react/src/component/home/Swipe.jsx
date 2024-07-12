@@ -33,16 +33,17 @@ const Swipe = () => {
     return (
  
         <Swiper
-            spaceBetween={50}
-            slidesPerView={3}
-            onSlideChange={() => console.log('slide change')}
-            onSwiper={(swiper) => console.log(swiper)}
+            spaceBetween={10}
+            slidesPerView={5}
+           
+           
             className='w-[100%]'
         >
             {bestsellingPrd.map((item ,index) => (
-                <SwiperSlide key={index} className='h-[200px] bg-blue-800 flex items-center justify-center'>
-                    <div className="card bg-white p-4 rounded-lg shadow-lg text-center w-[90%] h-[90%] flex flex-col justify-around">
+                <SwiperSlide key={index} className='h-[200px] flex items-center justify-center'>
+                    <div className="card bg-white p-4 rounded-lg shadow-lg text-center max-w-[200px] min-w-[200px] h-[90%] flex flex-col justify-around">
                         <h3 className="text-lg font-bold">{item.product_name}</h3>
+                        <img src={`http://127.0.0.1:8000/storage/${(item.images && item.images.length > 0 && item.images[0].file_path)}`}/>
                         <p className="text-gray-600">{item.price}</p>
                     </div>
                 </SwiperSlide>

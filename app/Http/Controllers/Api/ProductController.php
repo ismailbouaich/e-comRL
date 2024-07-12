@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Discount;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Brand;
 use App\Models\OrderDetail;
 
 class ProductController extends Controller
@@ -60,7 +61,7 @@ class ProductController extends Controller
       
       $key = $request->key;
     
-      $products = Product::with('images', 'category', 'discounts')
+      $products = Product::with('images', 'category', 'discounts','brand')
       ->search($key)
       ->get();
         
@@ -97,6 +98,14 @@ class ProductController extends Controller
         
         return response()->json($category);
     }
+
+    public function brand()
+    {
+        $brand= Brand::has('products')->get();
+        
+        return response()->json($brand);
+    }
+
 
     /**
      * Store a newly created resource in storage.

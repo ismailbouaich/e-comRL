@@ -57,6 +57,9 @@ Route::get('/product/mostSelling',[ProductController::class,'bestSellingProduct'
 
 
 Route::get('/categories',[ProductController::class,'category']);
+
+Route::get('/brands',[ProductController::class,'brand']);
+
 Route::get('/product/{id}',[ProductController::class,'show']);
 Route::get('/search/{key}',[ProductController::class,'search']);
 
