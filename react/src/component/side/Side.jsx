@@ -18,6 +18,7 @@ const Sidebar = ({ onFilterChange }) => {
 
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedBrands, setSelectedBrands] = useState([]);
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
 
   useEffect(() => {
     dispatch(fetchCategories());
@@ -25,8 +26,8 @@ const Sidebar = ({ onFilterChange }) => {
   }, [dispatch]);
 
   useEffect(() => {
-    onFilterChange({ selectedCategories, selectedBrands });
-  }, [selectedCategories, selectedBrands, onFilterChange]);
+    onFilterChange({ selectedCategories, selectedBrands,priceRange  });
+  }, [selectedCategories, selectedBrands,priceRange , onFilterChange]);
 
   const handleCheckboxChange = (event, setSelectedState, keyword) => {
     const { checked } = event.target;
@@ -45,6 +46,14 @@ const Sidebar = ({ onFilterChange }) => {
       <span key={index} className="bg-gray-200 px-2 py-1 rounded-full">{keyword}</span>
     ));
   };
+
+  const handlePriceChange = (event) => {
+    const { name, value } = event.target;
+    setPriceRange((prevRange) => ({
+        ...prevRange,
+        [name]: Number(value),
+    }));
+};
 
   return (
     <div className="w-1/5 ml-4 my-7 p-4 border border-gray-200 rounded-lg">
@@ -89,15 +98,32 @@ const Sidebar = ({ onFilterChange }) => {
         </div>
       </div>
 
+      
       <div>
-        <h2 className="font-bold mb-2">Price</h2>
-        <input
-          type="range"
-          min="0"
-          max="1000"
-          className="w-full accent-black"
-        />
-      </div>
+                <h2 className="font-bold mb-2">Price</h2>
+                <input
+                    type="range"
+                    name="min"
+                    value={priceRange.min}
+                    min="0"
+                    max="1000"
+                    onChange={handlePriceChange}
+                    className="w-full accent-black"
+                />
+                <input
+                    type="range"
+                    name="max"
+                    value={priceRange.max}
+                    min="0"
+                    max="1000"
+                    onChange={handlePriceChange}
+                    className="w-full accent-black"
+                />
+                <div>
+                    <span>Min: ${priceRange.min}</span>
+                    <span>Max: ${priceRange.max}</span>
+                </div>
+            </div>
     </div>
   );
 };

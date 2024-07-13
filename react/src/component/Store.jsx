@@ -21,6 +21,7 @@ const Store = () => {
     selectedCategories: [],
     selectedBrands: [],
     selectedColors: [],
+    priceRange: { min: 0, max: 1000 },
   });
 
   const navigate = useNavigate();
@@ -64,9 +65,10 @@ const Store = () => {
       const matchBrand =
         filters.selectedBrands.length === 0 ||
         (product.brand && filters.selectedBrands.includes(product.brand.name));
-    
+      const matchPrice =
+        product.price >= filters.priceRange.min && product.price <= filters.priceRange.max;
 
-      return matchCategory && matchBrand ;
+      return matchCategory && matchBrand && matchPrice;
     });
   }, [products, filters]);
 
@@ -95,7 +97,6 @@ const Store = () => {
             <input
               type="text"
               onChange={(e) => setSearchKey(e.target.value)}
-              value={searchKey}
               placeholder="Search products..."
               className="border border-gray-300 p-2 rounded-lg w-64"
             />
@@ -116,7 +117,7 @@ const Store = () => {
           {(searchResults.length > 0 ? searchResults : filteredProducts).map((product) => (
             <div className="border p-4 rounded-lg shadow-md" key={product.id}>
               <div className="mb-4">
-                <img
+              <img
                   src={`http://127.0.0.1:8000/storage/${
                     product.images && product.images.length > 0 && product.images[0].file_path
                   }`}
@@ -124,22 +125,30 @@ const Store = () => {
                   className="w-full h-48 object-cover rounded-lg"
                 />
               </div>
-              <div>
-                <h5 className="font-bold mb-2">{product.product_name}</h5>
-                <p className="text-gray-500 mb-2">{product.category && product.category.name}</p>
-                <p className="mb-2">${product.price}</p>
-                <p className="mb-4">${product.discounted_price}</p>
-                <Link to={`/product/${product.id}`} state={{ user }} className="text-blue-500 underline">
-                  Show More
+              <div className="mb-4">
+                <h3 className="text-xl font-semibold">{product.product_name}</h3>
+                <p className="text-gray-500">${product.price}</p>
+              </div>
+              <div className="flex justify-between items-center">
+                <Link
+                to={`/product/${product.id}`} state={{ user }}
+                  className="bg-blue-500 text-white py-2 px-4 rounded-lg"
+                >
+                  Details
                 </Link>
                 <button
-                  type="button"
                   onClick={() =>
-                    addToCart(product.id, 1, product.product_name, product.images, product.price)
+                    addToCart(
+                      product.id,
+                      1,
+                      product.product_name,
+                      product.images.length > 0 ? product.images[0].image_path : '',
+                      product.price
+                    )
                   }
-                  className="mt-2 p-2 bg-green-500 text-white rounded-lg"
+                  className="bg-green-500 text-white py-2 px-4 rounded-lg"
                 >
-                  Add to cart
+                  Add to Cart
                 </button>
               </div>
             </div>
@@ -148,10 +157,6 @@ const Store = () => {
       </div>
     </div>
   );
-};
-
-Store.propTypes = {
-  user: PropTypes.object,
 };
 
 export default Store;

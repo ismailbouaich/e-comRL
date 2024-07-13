@@ -19,7 +19,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::with('images', 'category', 'discounts')->get();
+        $products = Product::with('images', 'category', 'discounts','brand')->get();
         
         // Iterate through products and check for active discounts
         foreach ($products as $product) {
@@ -159,7 +159,7 @@ class ProductController extends Controller
     public function show($id)
     {
         try {
-            $product = Product::with('images', 'category')->find($id);
+            $product = Product::with('images', 'category','brand')->find($id);
             if ($product) {
                 $currentDiscount = $product->currentDiscount();
                 

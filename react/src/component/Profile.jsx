@@ -1,7 +1,8 @@
-import React,{useEffect}from 'react'
+import {useEffect}from 'react'
 import { useNavigate } from 'react-router';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { Button } from '../components/ui/button';
 
 
 
@@ -26,6 +27,9 @@ const Profile = () => {
         <li className="list-group-item">Name: {user.name}</li>
             <li className="list-group-item">Email: {user.email} </li>
         </ul>
+        <Button>
+          sssssssssss
+        </Button>
         <Link to={`/edit/user/}`} className='btn btn-primary'>Edit</Link>
 
       </div>
