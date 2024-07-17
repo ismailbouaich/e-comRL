@@ -5,6 +5,7 @@ import categoryReducer from './categoryReducer';
 import orderReducer from './orderReducer';
 import cartReducer from './cartReducer';
 import { brandReducer } from './brandReducer';
+import ratingReducer from './ratingReducer';
 // Import other reducers as needed
 
 const rootReducer = combineReducers({
@@ -13,7 +14,8 @@ const rootReducer = combineReducers({
     category: categoryReducer,
     order: orderReducer,
     cart: cartReducer,
-    brand:brandReducer
+    brand:brandReducer,
+    ratings: ratingReducer,
     // Add other reducers here
 
 });

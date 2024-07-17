@@ -7,6 +7,7 @@ import {
   CREATE_CART_ITEMS_ORDER_REQUEST,
   CREATE_CART_ITEMS_ORDER_SUCCESS,
   CREATE_CART_ITEMS_ORDER_FAILURE,
+  CLEAR_CART 
 } from '../constants/cartitemsConstants';
 
 export const addToCart = (product) => ({
@@ -19,15 +20,22 @@ export const removeFromCart = (productId) => ({
   payload: productId,
 });
 
-export const updateQuantity = (productId, quantity) => ({
+export const updateQuantity = (productId, newQuantity) => ({
   type: UPDATE_QUANTITY,
-  payload: { productId, quantity },
+  payload: { productId, newQuantity },
 });
 
 export const setCart = (products) => ({
   type: SET_CART,
   payload: products,
 });
+
+export const clearCart = (userId) => {
+  return {
+    type: CLEAR_CART,
+    payload: userId,
+  };
+};
 
 export const createCartItemsOrder = (orderData) => async (dispatch) => {
   dispatch({ type: CREATE_CART_ITEMS_ORDER_REQUEST });

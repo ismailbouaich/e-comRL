@@ -8,14 +8,15 @@ import CommentList from './CommentList ';
 import Model from '../common/Model';
 import { fetchProduct } from '../redux/actions/productActions';
 import { createOrder } from '../redux/actions/orderActions';
+import Rating from './Rating';
 
 const Product = () => {
   const { id } = useParams();
   const [selectedImage, setSelectedImage] = useState(null);
   const [order, setOrder] = useState({
-    quantity: '',
     products: [],
   });
+  const [quantity, setQuantity] = useState(1); // State for the counter
   const [loadKey, setLoadKey] = useState(Date.now());
   const [isOpen, setIsOpen] = useState(false);
 
@@ -29,8 +30,6 @@ const Product = () => {
   const orderLoading = useSelector((state) => state.order.loading);
   const orderError = useSelector((state) => state.order.error);
   const stripe_url = useSelector((state) => state.order.order?.stripe_url);
-
-
 
   useEffect(() => {
     if (!localStorage.getItem('token')) {
@@ -69,19 +68,19 @@ const Product = () => {
     }));
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setOrder((prevOrder) => ({
-      ...prevOrder,
-      [name]: value,
-    }));
+  const handleIncrement = () => {
+    setQuantity((prevQuantity) => prevQuantity + 1);
+  };
+
+  const handleDecrement = () => {
+    setQuantity((prevQuantity) => (prevQuantity > 1 ? prevQuantity - 1 : 1));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     const orderData = {
       ...order,
-      products: [{ product_id: product.id, quantity: order.quantity }],
+      products: [{ product_id: product.id, quantity }],
       customer_id: user?.id,
       customer_name: user?.name,
     };
@@ -92,7 +91,7 @@ const Product = () => {
     setSelectedImage(imagePath);
   };
 
- return (
+  return (
     <div className="container mx-auto mt-5">
       {loading ? (
         <p className="text-center">Loading...</p>
@@ -118,15 +117,26 @@ const Product = () => {
             {user && <span className="mb-4 block">{user.name}</span>}
             <div>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label htmlFor="quantity" className="block mb-2 font-semibold">Quantity</label>
-                  <input
-                    type="number"
-                    className="w-full p-2 border border-gray-300 rounded"
-                    id="quantity"
-                    name="quantity"
-                    onChange={handleInputChange}
-                  />
+                <div className="flex items-center justify-center">
+                  <button
+                    type="button"
+                    className="flex justify-center items-center w-10 h-10 rounded-full text-white focus:outline-none bg-gray-400 hover:bg-gray-500"
+                    onClick={handleDecrement}
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4"></path>
+                    </svg>
+                  </button>
+                  <span id="counter" className="text-4xl font-bold mx-4">{quantity}</span>
+                  <button
+                    type="button"
+                    className="flex justify-center items-center w-10 h-10 rounded-full text-white focus:outline-none bg-indigo-500 hover:bg-indigo-600"
+                    onClick={handleIncrement}
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v12M6 12h12"></path>
+                    </svg>
+                  </button>
                 </div>
                 <button
                   type="button"
@@ -166,12 +176,12 @@ const Product = () => {
         <p className="text-center">No product found.</p>
       )}
       <div className="mt-6">
+        <Rating productId={id}/>
         <CommentForm productId={id} />
         <CommentList productId={id} />
       </div>
     </div>
   );
-
 };
 
 export default Product;

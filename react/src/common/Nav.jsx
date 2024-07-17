@@ -2,7 +2,7 @@ import  { useState, useCallback ,useEffect} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { logoutUser } from '../redux/actions/userActions';
-import Testsheet from './testsheet';
+import ShoppingCart from './ShoppingCart';
 
 
 const links=[
@@ -118,12 +118,13 @@ const Nav = () => {
 
                 
                 <ul className="hidden lg:flex lg:mx-auto lg:items-center lg:w-auto lg:space-x-6">
-                <Testsheet/>
+                
                 {navlinks}
                     
                 </ul>
-                {buttons}
-                        {profile}
+                <div className="xxs:hidden">
+                <ShoppingCart/>
+                </div>
             </nav>
             </div>
             <div className={`navbar-menu transition-transform duration-500 ease-in-out fixed top-0 left-0 bottom-0 flex flex-col w-full py-6 px-6 overflow-y-auto z-50 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`} onTransitionEnd={handleTransitionEnd}>
@@ -155,7 +156,7 @@ const Nav = () => {
                         </ul>
                     </div>
                     <div className="mt-auto">
-                        <div className="pt-6">
+                        <div className="pt-6 gap-4">
 
                         {buttons}
                         {profile}

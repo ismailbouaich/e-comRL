@@ -14,7 +14,8 @@ class Order extends Model
 
     protected $table = 'orders'; // Name of the orders table
     protected $fillable = [
-        'customer_name', 'customer_id', 'delivery_worker_id', 'status','is_assigned','session_id', 
+        'first_name','last_name', 'email','phone', 'customer_id', 'delivery_worker_id', 'status','is_assigned','session_id', 
+
     ];
 
     public function orderDetails()

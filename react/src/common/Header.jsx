@@ -8,7 +8,7 @@ import Profile from '../component/Profile';
 import Forgot from '../component/Forgot';
 import Store from '../component/Store';
 import Product from '../component/Product';
-import Cart from '../component/Cart';
+
 
 
 import { ThemeContext } from '../theme/ThemeContext';
@@ -17,6 +17,7 @@ import Confirmed  from '../component/Confirmed';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUserData } from '../redux/actions/userActions';
+import Checkout from '../component/checkout/Checkout';
 
 
 
@@ -49,9 +50,9 @@ const Header = () => {
       <Route path="/forget" element={<Forgot />} />
       <Route path="/store" element={<Store />} />
       <Route path="/product/:id" element={<Product />} />
-      <Route path="/cart" element={<Cart />} />
       <Route path="/success" element={<Success />} />
       <Route path="/confirmed" element={<Confirmed />} />
+      <Route path='/checkout' element={<Checkout/>} />
     </Routes>
   </div>
   );

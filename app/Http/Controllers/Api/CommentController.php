@@ -8,29 +8,53 @@ use App\Http\Resources\CommentResource;
 use App\Models\Comment;
 use App\Models\Favorite;
 use App\Models\Product;
+use App\Models\Rating;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class CommentController extends Controller
 
 {
-    public function likeProduct($product_id)
+    public function favoriteProduct($productId)
     {
-        $product = Product::find($product_id);
+        $product = Product::find($productId);
 
         if (!$product) {
             return response()->json(['message' => 'Product not found'], Response::HTTP_NOT_FOUND);
         }
 
-        $liked = $product->favorites()->where('user_id', auth()->id())->exists();
+        $favorite = $product->favorites()->where('user_id', auth()->id())->exists();
 
-        if ($liked) {
+        if ($favorite) {
             $product->favorites()->detach(auth()->id());
             return response()->json(['message' => 'Unliked'], Response::HTTP_OK);
         } else {
             $product->favorites()->attach(auth()->id());
             return response()->json(['message' => 'Liked'], Response::HTTP_OK);
         }
+    }
+
+    
+     public function ratingProduct($product_id,Request $request)
+    {
+
+        $request->validate([
+            'user_id'=>'required',
+            'product_id'=>'required',
+            'rating'=>'required'
+        ]);
+
+        $product = Product::find($product_id);
+
+        
+
+        if (!$product) {
+            return response()->json(['message' => 'Product not found'], Response::HTTP_NOT_FOUND);
+        }
+        Rating::create($request->all());
+
+
+       return response()->json(['message' => 'Thank You For Sharing Your View'],201);
     }
 
     public function comment(Request $request, $product_id)
@@ -45,6 +69,8 @@ class CommentController extends Controller
             'body' => $request->body
         ]);
 
+        $comment->save();
+
         return response()->json(['message' => 'Comment added successfully'], Response::HTTP_CREATED);
     }
 
@@ -56,5 +82,32 @@ class CommentController extends Controller
             'comments' => $comments
         ], 200);
     }
+
+    public function getProductRatings($productId)
+    {
+        $product = Product::find($productId);
+
+        if (!$product) {
+            return response()->json(['message' => 'Product not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $ratings = $product->ratings;
+
+        return response()->json($ratings, Response::HTTP_OK);
+    }
+
+    public function getUserFavorites()
+{
+    $user = auth()->user();
+
+    if (!$user) {
+        return response()->json(['message' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
+    }
+
+    $favorites = $user->favoriteProducts;
+
+    return response()->json($favorites, Response::HTTP_OK);
+}
+
    
 }

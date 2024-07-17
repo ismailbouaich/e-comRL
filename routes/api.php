@@ -47,7 +47,7 @@ Route::post('/resetPassword',[ResetController::class,'resetPassword']);
 
 
 //store routes
-Route::get('/user/list',[UserController::class,'userlist']);
+
 Route::get('/user/edit/{id}',[UserController::class,'edit']);
 Route::post('/user/update/{id}',[UserController::class,'update']);
 Route::get('/product/list',[ProductController::class,'index']);
@@ -64,6 +64,9 @@ Route::get('/product/{id}',[ProductController::class,'show']);
 Route::get('/search/{key}',[ProductController::class,'search']);
 
 
+
+
+
 Route::post('/order/complete', [DeliveryController::class, 'completeOrder']);
 
 
@@ -73,6 +76,10 @@ Route::get('/success', [OrderController::class, 'success'])->name('checkout.succ
 Route::get('/cancel', [OrderController::class, 'cancel'])->name('checkout.cancel');
 Route::get('/generateQrCode', [OrderController::class, 'generateQrCode']);
 Route::post('/webhook', [OrderController::class, 'webhook']);
+Route::get('/failed', [OrderController::class, 'failed'])->name('checkout.failed');
+
+Route::post('/orders/{userId}', [OrderController::class, 'orderHistory']);
+
 
 
 //cart Route
@@ -86,7 +93,12 @@ Route::delete('/cart/delete/{id}',[CartController::class,'destroy']);
 
 
 
-Route::post('/product/favorite/{product_id}', [CommentController::class, 'likeProduct'])->middleware('auth:api');
+Route::get('/user/favorites', [CommentController::class, 'getUserFavorites'])->middleware('auth:api');
+Route::post('/product/favorite/{productId}', [CommentController::class, 'favoriteProduct'])->middleware('auth:api');
+
+Route::get('/product/ratings/{product_id}', [CommentController::class, 'getProductRatings']);
+Route::post('/product/ratings/{product_id}', [CommentController::class, 'ratingProduct'])->middleware('auth:api');
+
 Route::post('/product/comment/{product_id}', [CommentController::class, 'comment'])->middleware('auth:api');
 Route::get('/product/comments/{product_id}', [CommentController::class, 'getComments']);
 

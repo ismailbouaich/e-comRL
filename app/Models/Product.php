@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Product extends Model
@@ -54,12 +55,20 @@ class Product extends Model
    
 
     //i added this part
-    public function favorites(): HasMany
+   
+
+     public function favorites(): BelongsToMany
     {
-        return $this->hasMany(Favorite::class);
+        return $this->belongsToMany(User::class, 'favorites');
     }
 
-    public function getfavoriteAttribute(): bool
+    public function ratings(): HasMany
+    {
+        return $this->hasMany(Rating::class);
+    }
+
+
+    public function getFavoriteAttribute(): bool
     {
         return (bool) $this->favorites()->where('product_id', $this->id)->where('user_id', auth()->id())->exists();
     }

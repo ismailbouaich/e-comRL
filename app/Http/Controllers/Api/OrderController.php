@@ -45,7 +45,10 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'customer_name' => 'required',
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'email' => 'required|email',
+            'phone' => 'required',
             'customer_id' => 'required',
             'products' => 'required|array|min:1',
             'products.*.product_id' => 'required|exists:products,id',
@@ -95,6 +98,7 @@ class OrderController extends Controller
                 'mode' => 'payment',
                 'success_url' => route('checkout.success', [], true) . "?session_id={CHECKOUT_SESSION_ID}",
                 'cancel_url' => route('checkout.cancel', [], true),
+                
             ]);
         } catch (\Stripe\Exception\ApiErrorException $e) {
             return response()->json(['error' => 'Stripe API error: ' . $e->getMessage()], 500);
@@ -103,7 +107,10 @@ class OrderController extends Controller
         DB::beginTransaction();
         try {
             $order = Order::create([
-                'customer_name' => $validatedData['customer_name'],
+                'first_name' => $validatedData['first_name'],
+                'last_name' => $validatedData['last_name'],
+                'email' => $validatedData['email'],
+                'phone' => $validatedData['phone'],
                 'customer_id' => $validatedData['customer_id'],
                 'delivery_worker_id' => $deliveryWorker->id,
                 'session_id' => $checkout_session->id,
@@ -134,19 +141,19 @@ class OrderController extends Controller
             foreach ($admins as $admin) {
                 $notification = new \MBarlow\Megaphone\Types\Important(
                     'New Order Placed',
-                    'A new order has been placed by ' . $validatedData['customer_name'] . '.',
+                    'A new order has been placed by ' . $validatedData['first_name'] .$validatedData['last_name']. '.',
                     'https://example.com/order-details', // Optional: URL
                     'View Order Details' // Optional: Link Text
                 );
                 $admin->notify($notification);
             }
     
-            $qrCodeData = "order/{$order->id}/customer/{$order->customer_name}/date/{$order->created_at}";
-        $qrCode = QrCode::size(300)->generate($qrCodeData);
-        $qrCodeBase64 = base64_encode($qrCode);
+            $qrCodeData = "order/{$order->id}/customer/{$order->first_name} {$order->last_name} /date/{$order->created_at}";
+            $qrCode = QrCode::size(300)->generate($qrCodeData);
+            $qrCodeBase64 = base64_encode($qrCode);
             // Send the email
-            Mail::to('ismailbouaichi10@gmail.com')->send(new OrderSuccessEmail([
-                'name' => $validatedData['customer_name'],
+            Mail::to($validatedData['email'])->send(new OrderSuccessEmail([
+                'name' => $validatedData['first_name'],
                 'qrCode' => $qrCodeBase64
             ]));
     
@@ -231,6 +238,12 @@ class OrderController extends Controller
         return response()->json(['qrCodeBase64' => $qrCodeBase64, 'order' => $order], 200);
     }
 
+
+    public function failed()  {
+
+        return redirect('http://localhost:3000/failed');
+        
+    }
     
     public function cancel(Request $request)
     {
@@ -245,7 +258,6 @@ class OrderController extends Controller
         }
     
         if ($order->status === 'paid') {
-           
             try {
                 $stripe = new StripeClient(env('STRIPE_SECRET'));
                 $refund = $stripe->refunds->create([
@@ -260,16 +272,18 @@ class OrderController extends Controller
             }
         }
     
+        // Update the order status to 'canceled'
         $order->status = 'canceled';
         $order->save();
     
+        // Restore the product stock quantities
         $orderDetails = $order->orderDetails;
         foreach ($orderDetails as $orderDetail) {
             $product = Product::find($orderDetail->product_id);
             $product->increment('stock_quantity', $orderDetail->quantity);
         }
     
-        return response()->json(['message' => 'Order has been canceled and payment refunded successfully.'], 200);
+        return response()->json(['message' => 'Order has been canceled successfully.']);
     }
     
     public function webhook()
@@ -320,9 +334,22 @@ class OrderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Order $order)
+    public function orderHistory($userId)
     {
-        //
+        
+
+        $orders = DB::table('orders')
+    ->join('users', 'orders.customer_id', '=', 'users.id')
+    ->join('order_details','orders.id','=','order_details.orders_id')
+    ->join('products','order_details.product_id','=','products.id')
+    ->select('orders.id','orders.created_at as Date', 'products.product_name','orders.status','order_details.total_price as Total')
+    ->where('orders.customer_id', $userId)
+    ->get();
+
+     return response()->json($orders);
+
+
+
     }
 
     /**

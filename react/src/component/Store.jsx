@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import PropTypes from 'prop-types';
 import {
   fetchProducts,
   searchProducts,
@@ -72,7 +71,7 @@ const Store = () => {
     });
   }, [products, filters]);
 
-  const addToCart = (id, quantity, productName, images, price) => {
+  const addToCart = (id, quantity, productName, image, price) => {
     const userId = user.id;
     const key = `cart_${userId}`;
     const existingCartItems = JSON.parse(localStorage.getItem(key)) || [];
@@ -81,7 +80,7 @@ const Store = () => {
     if (existingCartItem) {
       existingCartItem.quantity += quantity;
     } else {
-      existingCartItems.push({ id, quantity, productName, images, price });
+      existingCartItems.push({ id, quantity, productName, image, price });
     }
 
     localStorage.setItem(key, JSON.stringify(existingCartItems));
@@ -117,7 +116,7 @@ const Store = () => {
           {(searchResults.length > 0 ? searchResults : filteredProducts).map((product) => (
             <div className="border p-4 rounded-lg shadow-md" key={product.id}>
               <div className="mb-4">
-              <img
+                <img
                   src={`http://127.0.0.1:8000/storage/${
                     product.images && product.images.length > 0 && product.images[0].file_path
                   }`}
@@ -131,7 +130,8 @@ const Store = () => {
               </div>
               <div className="flex justify-between items-center">
                 <Link
-                to={`/product/${product.id}`} state={{ user }}
+                  to={`/product/${product.id}`}
+                  state={{ user }}
                   className="bg-blue-500 text-white py-2 px-4 rounded-lg"
                 >
                   Details
@@ -142,7 +142,7 @@ const Store = () => {
                       product.id,
                       1,
                       product.product_name,
-                      product.images.length > 0 ? product.images[0].image_path : '',
+                      product.images && product.images.length > 0 ? `http://127.0.0.1:8000/storage/${product.images[0].file_path}` : '',
                       product.price
                     )
                   }
