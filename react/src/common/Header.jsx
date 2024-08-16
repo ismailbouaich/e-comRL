@@ -47,6 +47,7 @@ const Header = () => {
   useEffect(() => {
     dispatch(fetchCategories());
     dispatch(fetchBrands())
+    //88
   }, [dispatch]);
  
 
