@@ -10,31 +10,60 @@ import {
   CLEAR_CART 
 } from '../constants/cartitemsConstants';
 
-export const addToCart = (product) => ({
-  type: ADD_TO_CART,
-  payload: product,
-});
+export const addToCart = (product) => (dispatch, getState) => {
+  const userId = getState().user.user.id;
+  const key = `cart_${userId}`;
+  
+  dispatch({
+    type: ADD_TO_CART,
+    payload: product,
+  });
 
-export const removeFromCart = (productId) => ({
-  type: REMOVE_FROM_CART,
-  payload: productId,
-});
+  const updatedCart = getState().cart.cart;
+  localStorage.setItem(key, JSON.stringify(updatedCart));
+};
 
-export const updateQuantity = (productId, newQuantity) => ({
-  type: UPDATE_QUANTITY,
-  payload: { productId, newQuantity },
-});
+export const removeFromCart = (productId) => (dispatch, getState) => {
+  const userId = getState().user.user.id;
+  const key = `cart_${userId}`;
+  
+  dispatch({
+    type: REMOVE_FROM_CART,
+    payload: productId,
+  });
+
+  const updatedCart = getState().cart.cart;
+  localStorage.setItem(key, JSON.stringify(updatedCart));
+};
+
+export const updateQuantity = (productId, newQuantity) => (dispatch, getState) => {
+  const userId = getState().user.user.id;
+  const key = `cart_${userId}`;
+  
+  dispatch({
+    type: UPDATE_QUANTITY,
+    payload: { productId, newQuantity },
+  });
+
+  const updatedCart = getState().cart.cart;
+  localStorage.setItem(key, JSON.stringify(updatedCart));
+};
 
 export const setCart = (products) => ({
   type: SET_CART,
   payload: products,
 });
 
-export const clearCart = (userId) => {
-  return {
+export const clearCart = () => (dispatch, getState) => {
+  const userId = getState().user.user.id;
+  const key = `cart_${userId}`;
+
+  localStorage.removeItem(key);
+
+  dispatch({
     type: CLEAR_CART,
     payload: userId,
-  };
+  });
 };
 
 export const createCartItemsOrder = (orderData) => async (dispatch) => {

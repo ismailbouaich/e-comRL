@@ -1,3 +1,4 @@
+
 import  {  useEffect, useContext } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Nav from './Nav'
@@ -10,16 +11,18 @@ import Store from '../component/Store';
 import Product from '../component/Product';
 
 
-
 import { ThemeContext } from '../theme/ThemeContext';
 import Success from '../component/Success';
 import Confirmed  from '../component/Confirmed';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUserData } from '../redux/actions/userActions';
+
+
+import { fetchCategories } from '../redux/actions/categoryActions';
+
+import { fetchBrands } from '../redux/actions/brandActions';
 import Checkout from '../component/checkout/Checkout';
-
-
 
 
 
@@ -39,6 +42,15 @@ const Header = () => {
       dispatch(fetchUserData());
     }
   }, [dispatch]);
+
+
+  useEffect(() => {
+    dispatch(fetchCategories());
+    dispatch(fetchBrands())
+  }, [dispatch]);
+ 
+
+  
   return (
     <div className={darkMode ? 'dark-mode' : 'light-mode'}>
     <Nav />
@@ -52,7 +64,8 @@ const Header = () => {
       <Route path="/product/:id" element={<Product />} />
       <Route path="/success" element={<Success />} />
       <Route path="/confirmed" element={<Confirmed />} />
-      <Route path='/checkout' element={<Checkout/>} />
+      <Route path='/checkout' element={<Checkout />} />
+
     </Routes>
   </div>
   );

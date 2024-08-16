@@ -8,7 +8,7 @@ import { Provider } from 'react-redux';
 import store from './redux/store';
 
 import'./index.css'
-import Footer from './common/footer';
+import App from './App';
 
 axios.defaults.baseURL=`http://127.0.0.1:8000/api`;
 
@@ -23,8 +23,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <Provider store={store}>
     <ThemeProvider> 
       <BrowserRouter>
-          <Header />
-          <Footer/>
+      <App />
       </BrowserRouter>
     </ThemeProvider>
     </Provider>

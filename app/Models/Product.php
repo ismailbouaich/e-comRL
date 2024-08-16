@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class Product extends Model
 {
@@ -13,10 +14,21 @@ class Product extends Model
 
     protected $table = 'products'; // Name of the product table
     protected $fillable = ['product_name', 'description', 'price', 'stock_quantity','brand_id','category_id'];
-         public function brand()
+  
+
+    public function images()
+    {
+     return $this->hasMany(Image::class);
+    }
+       public function brand()
     {
         return $this->belongsTo(Brand::class);
     }
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
 
     public function scopeSearch($query, $value) {
         $query->where('product_name', 'like', "%{$value}%")
@@ -35,23 +47,14 @@ class Product extends Model
    
     public function discounts()
     {
-        return $this->hasMany(Discount::class);
+        return $this->belongsToMany(Discount::class, 'discount_product');
     }
 
     public function currentDiscount()
     {
         return $this->discounts()->current()->first();
     }   
-     public function images()
-    {
-     return $this->hasMany(Image::class);
-    }
-
-    public function category()
-    {
-        return $this->belongsTo(Category::class);
-    }
-
+ 
    
 
     //i added this part
@@ -76,5 +79,12 @@ class Product extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class);
+    }
+
+    public function scopeWithAvgRating($query)
+    {
+        return $query->withCount(['ratings as avg_rating' => function ($query) {
+            $query->select(DB::raw('avg(rating)'));
+        }]);
     }
 }

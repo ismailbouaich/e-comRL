@@ -32,7 +32,7 @@
                         <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                             <tr>
                                 @include('livewire.tables.includes.table-sortable-th', [
-                                    'name' => 'customer_name',
+                                    'name' => 'first_name',
                                     'displayName' => 'Customer Name'
                                 ])
                                 @include('livewire.tables.includes.table-sortable-th', [

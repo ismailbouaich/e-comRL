@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const CommentList = ({ productId, }) => {
+const CommentList= ({ productId, }) => {
   const [comments, setComments] = useState([]);
 
   useEffect(() => {

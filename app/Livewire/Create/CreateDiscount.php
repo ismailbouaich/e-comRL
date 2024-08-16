@@ -18,7 +18,7 @@ class CreateDiscount extends Component
     public $start_date;
     public $end_date;
     public $is_active = true;
-    public $product_id;
+    public $product_ids = [];
     public $products = [];
 
     public function rules()
@@ -30,17 +30,21 @@ class CreateDiscount extends Component
             'discount_value' => 'required|numeric|min:0.01',
             'start_date' => 'required|date',
             'end_date' => 'nullable|date|after:start_date',
-            'product_id' => 'required|exists:products,id',
+            'product_ids' => 'required|array',
+            'product_ids.*' => 'exists:products,id',
         ];
     }
 
     public function createDiscount()
     {
         $validatedData = $this->validate();
-    
+
         // Create the discount
         $discount = Discount::create($validatedData);
-    
+
+        // Attach the selected products to the discount
+        $discount->products()->attach($this->product_ids);
+
         // Reset form fields after successful creation
         $this->reset();
     }

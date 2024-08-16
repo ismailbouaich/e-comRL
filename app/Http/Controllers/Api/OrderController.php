@@ -72,7 +72,7 @@ class OrderController extends Controller
             return response()->json(['message' => 'No available delivery worker. Please try again later.'], 500);
         }
         
-        $stripe = new StripeClient(env('STRIPE_SECRET'));
+        $stripe = new \Stripe\StripeClient('sk_test_51OoXr0GpFbRloXFo1L4MXy4mw18FpStW1CZHdCJLiic5nOqAoyNLXQBnhP9wXH3pB0zxjjv4pzdI1ugYyIWI3fn300HV6v4WjC');
     
         $lineItems = [];     
         foreach ($validatedData['products'] as $item) {
@@ -83,11 +83,12 @@ class OrderController extends Controller
                 return response()->json(['error' => 'Insufficient stock for product ' . $product->product_name], 400);
             }
           
-            $discountedPrice = $this->getDiscountedPrice($product, $item['quantity']);
+            // $discountedPrice = $this->getDiscountedPrice($product, $item['quantity']);
+            $unitPrice = $this->getDiscountedPrice($product, 1);
           
             $product->decrement('stock_quantity', $item['quantity']);
           
-            $lineItems[] = $this->formatLineItem($product, $discountedPrice, $item['quantity']);
+            $lineItems[] = $this->formatLineItem($product, $unitPrice, $item['quantity']);
         }
     
         try {
@@ -97,7 +98,7 @@ class OrderController extends Controller
                 'line_items' => $lineItems,
                 'mode' => 'payment',
                 'success_url' => route('checkout.success', [], true) . "?session_id={CHECKOUT_SESSION_ID}",
-                'cancel_url' => route('checkout.cancel', [], true),
+                'cancel_url' => route('checkout.failed', [], true),
                 
             ]);
         } catch (\Stripe\Exception\ApiErrorException $e) {
@@ -187,8 +188,8 @@ class OrderController extends Controller
     
     
     
-            private function formatLineItem($product, $totalPrice, $quantity) {
-            $totalPriceInCents = $totalPrice * 100; 
+            private function formatLineItem($product, $unitPrice, $quantity) {
+                $unitPriceInCents = $unitPrice * 100;
             return [
                 'price_data' => [
                 'currency' => 'usd',
@@ -196,7 +197,7 @@ class OrderController extends Controller
                     'name' => $product->product_name,
                     'description' => $product->description,
                 ],
-                'unit_amount' => $totalPriceInCents, 
+                'unit_amount' => $unitPriceInCents, 
                 ],
                 'quantity' => $quantity,
             ];
@@ -207,7 +208,8 @@ class OrderController extends Controller
         
         try {
             $sessionId = $request->query('session_id');
-            $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));  
+            $stripe = new \Stripe\StripeClient('sk_test_51OoXr0GpFbRloXFo1L4MXy4mw18FpStW1CZHdCJLiic5nOqAoyNLXQBnhP9wXH3pB0zxjjv4pzdI1ugYyIWI3fn300HV6v4WjC');
+ 
             $session = $stripe->checkout->sessions->retrieve($sessionId);
             $order = Order::where('session_id', $sessionId)->first();
             if (!$session || !$order) {
@@ -242,54 +244,19 @@ class OrderController extends Controller
     public function failed()  {
 
         return redirect('http://localhost:3000/failed');
-        
     }
     
     public function cancel(Request $request)
     {
-        $validatedData = $request->validate([
-            'order_id' => 'required|exists:orders,id',
-        ]);
-    
-        $order = Order::find($validatedData['order_id']);
-    
-        if ($order->status === 'canceled') {
-            return response()->json(['message' => 'Order is already canceled.'], 400);
-        }
-    
-        if ($order->status === 'paid') {
-            try {
-                $stripe = new StripeClient(env('STRIPE_SECRET'));
-                $refund = $stripe->refunds->create([
-                    'payment_intent' => $order->session_id,
-                ]);
-    
-                if ($refund->status !== 'succeeded') {
-                    return response()->json(['message' => 'Failed to process refund. Please try again.'], 500);
-                }
-            } catch (\Stripe\Exception\ApiErrorException $e) {
-                return response()->json(['message' => 'Stripe API error: ' . $e->getMessage()], 500);
-            }
-        }
-    
-        // Update the order status to 'canceled'
-        $order->status = 'canceled';
-        $order->save();
-    
-        // Restore the product stock quantities
-        $orderDetails = $order->orderDetails;
-        foreach ($orderDetails as $orderDetail) {
-            $product = Product::find($orderDetail->product_id);
-            $product->increment('stock_quantity', $orderDetail->quantity);
-        }
-    
-        return response()->json(['message' => 'Order has been canceled successfully.']);
+       
+        return redirect('http://localhost:3000/failed');
+
     }
     
     public function webhook()
     {
         
-        $endpoint_secret = env('STRIPE_WEBHOOK_SECRET');
+        $endpoint_secret = 'whsec_5270383984d1ba5c82a0ecf0094ed586e7763d93fb2f9808c1c46b6cd8536415';
 
         $payload = @file_get_contents('php://input');
         $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];

@@ -24,7 +24,7 @@ const Checkout = () => {
     zip_code: '',
 
   });
-  const [orderItems, setOrderItems] = useState([]);
+
 
 
   const stripe_url = useSelector((state) => state.order.order?.stripe_url);
@@ -32,7 +32,9 @@ const Checkout = () => {
   const [loadKey, setLoadKey] = useState(Date.now());
   const cartItems = useSelector((state) => state.cart.cart);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+
+  const orderLoading = useSelector((state) => state.order.loading);
+  
 
   const user = useSelector((state) => state.user.user);
 
@@ -51,7 +53,11 @@ const Checkout = () => {
     }
   }, [stripe_url]);
 
- 
+  useEffect(() => {
+    if (!orderLoading && stripe_url) {
+      dispatch(clearCart());
+    }
+  }, [orderLoading, stripe_url, dispatch]);
 
 
   const handleSubmit = async (e) => {
@@ -69,6 +75,7 @@ const Checkout = () => {
       };
 
       dispatch(createOrder(orderData));
+     
      
 
     } catch (error) {
@@ -218,8 +225,9 @@ const Checkout = () => {
             <button
               onClick={handleSubmit}
               className="bg-blue-500 text-white w-full py-2 mt-4 rounded"
+              disabled={orderLoading}
             >
-              Place Order
+             {orderLoading ? 'Loading...' : 'Order'}
             </button>
           </div>
         </div>

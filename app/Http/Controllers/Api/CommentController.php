@@ -15,24 +15,7 @@ use Illuminate\Http\Response;
 class CommentController extends Controller
 
 {
-    public function favoriteProduct($productId)
-    {
-        $product = Product::find($productId);
-
-        if (!$product) {
-            return response()->json(['message' => 'Product not found'], Response::HTTP_NOT_FOUND);
-        }
-
-        $favorite = $product->favorites()->where('user_id', auth()->id())->exists();
-
-        if ($favorite) {
-            $product->favorites()->detach(auth()->id());
-            return response()->json(['message' => 'Unliked'], Response::HTTP_OK);
-        } else {
-            $product->favorites()->attach(auth()->id());
-            return response()->json(['message' => 'Liked'], Response::HTTP_OK);
-        }
-    }
+   
 
     
      public function ratingProduct($product_id,Request $request)
@@ -108,6 +91,23 @@ class CommentController extends Controller
 
     return response()->json($favorites, Response::HTTP_OK);
 }
+ public function favoriteProduct($productId)
+    {
+        $product = Product::find($productId);
 
+        if (!$product) {
+            return response()->json(['message' => 'Product not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $favorite = $product->favorites()->where('user_id', auth()->id())->exists();
+
+        if ($favorite) {
+            $product->favorites()->detach(auth()->id());
+            return response()->json(['message' => 'Unliked'], Response::HTTP_OK);
+        } else {
+            $product->favorites()->attach(auth()->id());
+            return response()->json(['message' => 'Liked'], Response::HTTP_OK);
+        }
+    }
    
 }

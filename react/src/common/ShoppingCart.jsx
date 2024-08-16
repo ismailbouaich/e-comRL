@@ -7,6 +7,8 @@ import { addToCart, removeFromCart, updateQuantity, setCart } from '../redux/act
 import { X } from 'lucide-react';
 import { ScrollArea } from '../components/ui/scroll-area';
 
+import NotFoundImage from '../assets/images/empty.png';
+
 const ShoppingCart = () => {
   const dispatch = useDispatch();
   const products = useSelector(state => state.cart.cart);
@@ -18,10 +20,19 @@ const ShoppingCart = () => {
   };
 
   useEffect(() => {
-    if (user && user.id) {
-      const storedProducts = getCartItems(user.id);
-      dispatch(setCart(storedProducts));
+
+    const fetchproductcart= async()=>{
+      if (user && user.id) {
+        const storedProducts = getCartItems(user.id);
+        dispatch(setCart(storedProducts));
+      }
     }
+    fetchproductcart();
+    window.addEventListener('productAdded', fetchproductcart); // Add event listener
+
+    return () => {
+      window.removeEventListener('productAdded', fetchproductcart); // Cleanup
+    };
   }, [dispatch, user]);
 
   const handleDecrement = (productId, currentQuantity) => {
@@ -84,6 +95,7 @@ const ShoppingCart = () => {
             ))
           ) : (
             <div className="text-center">
+              <img src={NotFoundImage} alt="Not Found" className="h-48 w-auto" />
               <p>Your cart is empty.</p>
             </div>
           )}
