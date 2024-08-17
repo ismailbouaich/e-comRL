@@ -8,6 +8,7 @@ import { X } from 'lucide-react';
 import { ScrollArea } from '../components/ui/scroll-area';
 
 import NotFoundImage from '../assets/images/empty.png';
+import { useTranslation } from 'react-i18next';
 
 const ShoppingCart = () => {
   const dispatch = useDispatch();
@@ -35,11 +36,14 @@ const ShoppingCart = () => {
     };
   }, [dispatch, user]);
 
-  const handleDecrement = (productId, currentQuantity) => {
-    if (currentQuantity > 1) {
-      dispatch(updateQuantity(productId, currentQuantity - 1));
+  const handleDecrement = (product) => {
+    if (product.quantity > 1) {
+      dispatch(updateQuantity(product.id, product.quantity - 1));
+    } else {
+      dispatch(removeFromCart(product.id));
     }
   };
+
 
   const handleIncrement = (productId, currentQuantity) => {
     dispatch(updateQuantity(productId, currentQuantity + 1));
@@ -68,7 +72,7 @@ const ShoppingCart = () => {
                     <button
                       data-action="decrement"
                       className="bg-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-400 h-full w-20 rounded-l cursor-pointer outline-none"
-                      onClick={() => handleDecrement(product.id, product.quantity)}
+                      onClick={() => handleDecrement(product, product.quantity)}
                     >
                       <span className="m-auto text-2xl font-thin">−</span>
                     </button>

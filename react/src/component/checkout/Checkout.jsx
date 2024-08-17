@@ -12,6 +12,7 @@ import "./style.css"
 import BingMap from '../BingMap';
 import { createOrder } from '../../redux/actions/orderActions';
 
+
 const Checkout = () => {
 
   const [order, setOrder] = useState(

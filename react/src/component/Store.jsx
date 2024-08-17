@@ -128,6 +128,8 @@ const prevSortOption = useRef(sortOption);
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
   };
+
+  
   const addToCart = (id, quantity, productName, image, price) => {
     const userId = user.id;
     const key = `cart_${userId}`;
@@ -243,7 +245,13 @@ const prevSortOption = useRef(sortOption);
                       <FaEye size={20} />
                     </Link>
                     <button
-                      onClick={() => addToCart(product.id, 1, product.name, product.image, product.price)}
+                   onClick={() => addToCart(
+                    product.id, 
+                    1, 
+                    product.name, 
+                    product.images && product.images.length > 0 ? `http://127.0.0.1:8000/storage/${product.images[0].file_path}` : '',
+                    product.price
+                  )}
                       className="text-white p-2 rounded-full hover:bg-white hover:text-black transition-colors duration-300"
                     >
                       <BsCart size={20} />

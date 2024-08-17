@@ -80,3 +80,9 @@
 .custom-number-input button:focus {
   outline: none !important;
 }
+
+#myNumber::-webkit-inner-spin-button,
+#myNumber::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
