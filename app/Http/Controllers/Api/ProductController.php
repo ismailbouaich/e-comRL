@@ -207,50 +207,69 @@ class ProductController extends Controller
 
 
 
-    public function show($id)
-    {
-        try {
-            $product = Product::with('images', 'category', 'brand')->find($id);
+public function show($id)
+{
+    try {
+        $product = Product::with(['images', 'category', 'brand'])
+            ->withAvg('ratings as avg_rating', 'rating')
+            ->withCount('ratings')
+            ->find($id);
 
-            if (!$product) {
-                return response()->json(['error' => 'Product not found'], 404);
-            }
-
-            $relatedByCategory = Product::where('category_id', $product->category_id)
-                                        ->where('id', '!=', $product->id)
-                                        ->with(['images', 'category', 'brand'])
-                                        ->limit(5)
-                                        ->get();
-
-            $relatedByBrand = Product::where('brand_id', $product->brand_id)
-                                     ->where('id', '!=', $product->id)
-                                     ->with(['images', 'category', 'brand'])
-                                     ->limit(5)
-                                     ->get();
-
-            $currentDiscount = $product->currentDiscount();
-
-            if ($currentDiscount) {
-                $product->is_discounted = true;
-                if ($currentDiscount->discount_type === 'percentage') {
-                    $product->discounted_price = $product->price * (1 - $currentDiscount->discount_value / 100);
-                } else {
-                    $product->discounted_price = $product->price - $currentDiscount->discount_value;
-                }
-                $product->discount_name = $currentDiscount->name;
-                $product->discount_code = $currentDiscount->code;
-            } else {
-                $product->is_discounted = false;
-            }
-
-            return response()->json([
-                'product' => $product,
-                'relatedByCategory' => $relatedByCategory,
-                'relatedByBrand' => $relatedByBrand
-            ]);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Internal server error'], 500);
+        if (!$product) {
+            return response()->json(['error' => 'Product not found'], 404);
         }
+
+        // Format the average rating to 1 decimal place
+        $product->avg_rating = number_format($product->avg_rating, 1);
+
+        $relatedByCategory = Product::where('category_id', $product->category_id)
+            ->where('id', '!=', $product->id)
+            ->with(['images', 'category', 'brand'])
+            ->withAvg('ratings as avg_rating', 'rating')
+            ->withCount('ratings')
+            ->limit(5)
+            ->get();
+
+        $relatedByBrand = Product::where('brand_id', $product->brand_id)
+            ->where('id', '!=', $product->id)
+            ->with(['images', 'category', 'brand'])
+            ->withAvg('ratings as avg_rating', 'rating')
+            ->withCount('ratings')
+            ->limit(5)
+            ->get();
+
+        // Format ratings for related products
+        $relatedByCategory->each(function ($product) {
+            $product->avg_rating = number_format($product->avg_rating, 1);
+        });
+
+        $relatedByBrand->each(function ($product) {
+            $product->avg_rating = number_format($product->avg_rating, 1);
+        });
+
+        $currentDiscount = $product->currentDiscount();
+
+        if ($currentDiscount) {
+            $product->is_discounted = true;
+            if ($currentDiscount->discount_type === 'percentage') {
+                $product->discounted_price = $product->price * (1 - $currentDiscount->discount_value / 100);
+            } else {
+                $product->discounted_price = $product->price - $currentDiscount->discount_value;
+            }
+            $product->discount_name = $currentDiscount->name;
+            $product->discount_code = $currentDiscount->code;
+        } else {
+            $product->is_discounted = false;
+        }
+
+        return response()->json([
+            'product' => $product,
+            'relatedByCategory' => $relatedByCategory,
+            'relatedByBrand' => $relatedByBrand
+        ]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Internal server error'], 500);
     }
+}
   
 }

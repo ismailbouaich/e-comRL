@@ -83,8 +83,7 @@ class Product extends Model
 
     public function scopeWithAvgRating($query)
     {
-        return $query->withCount(['ratings as avg_rating' => function ($query) {
-            $query->select(DB::raw('avg(rating)'));
-        }]);
+        return $query->withAvg('ratings as avg_rating', 'rating');
     }
+
 }
