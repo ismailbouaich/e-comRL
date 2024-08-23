@@ -5,7 +5,7 @@ import Nav from './Nav'
 import Home from '../component/home/Home';
 import Login from '../component/Login';
 import Register from '../component/Register';
-import Profile from '../component/Profile';
+import Profile from '../component/profile/Profile';
 import Forgot from '../component/Forgot';
 import Store from '../component/Store';
 import Product from '../component/Product';
@@ -36,15 +36,14 @@ const Header = () => {
 
 
  
+ 
+
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       dispatch(fetchUserData());
     }
-  }, [dispatch]);
-
-
-  useEffect(() => {
     dispatch(fetchCategories());
     dispatch(fetchBrands())
     //88
@@ -59,7 +58,7 @@ const Header = () => {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/profile" element={user ? <Profile /> : <Login />} />
+      <Route path="/profile" element={<Profile />} />
       <Route path="/forget" element={<Forgot />} />
       <Route path="/store" element={<Store />} />
       <Route path="/product/:id" element={<Product />} />

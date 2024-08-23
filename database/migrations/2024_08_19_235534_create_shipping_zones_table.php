@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->string('email')->nullable();
-            $table->string('phone')->nullable();
-            $table->string('last_name')->nullable();
-            
+        Schema::create('shipping_zones', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->decimal('shipping_cost', 8, 2);
+            $table->timestamps();
         });
     }
 
@@ -24,8 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('shipping_zones');
     }
 };

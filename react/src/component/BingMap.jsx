@@ -59,11 +59,11 @@ const BingMap = ({ onLocationSelect }) => {
       .then(response => response.json())
       .then(data => {
         const address = data.resourceSets[0].resources[0].address;
-        onLocationSelect(address.formattedAddress, address.postalCode, address.adminDistrict2);
+        onLocationSelect(address.formattedAddress, address.postalCode, address.adminDistrict2,address.countryRegion);
         console.log('Address:', address.formattedAddress);
         console.log('Postal Code:', address.postalCode);
         console.log('City:', address.adminDistrict2);
-        console.log('City:', address);
+        console.log('Country:', address.countryRegion);
       })
       .catch(error => console.error('Error:', error));
   };

@@ -1,29 +1,33 @@
-import React from 'react'
+import { forgetPassword } from '../redux/actions/userActions';
+import React, { useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux';
 
 const Forgot = () => {
-    const click = (e) => {
-        e.preventDefault();
-      };
+  const [email, setEmail] = useState('');
+  const dispatch = useDispatch();
+  const { loading, message, error } = useSelector(state => state.user.forgetPassword);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    dispatch(forgetPassword(email));
+  };
+
   return (
-    <div className="container mt-4">
-    <div className="row justify-content-center">
-      <div className="col-lg-4 bg-light p-4 rounded shadow">
-        <h3 className="text-center mb-4">Forget Your Password</h3>
-        <form>
-        
-          <div className="mb-3">
-            <label htmlFor="email" className="form-label">Email Address</label>
-            <input type="email" className="form-control" id="email" />
-          </div>
-          <div className="d-grid gap-2">
-            <button type="submit" onClick={click} className="btn btn-primary">Send</button>
-          </div>
-        </form>
-        
-      </div>
-    </div>
-  </div>
-  )
+    <form onSubmit={handleSubmit}>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Enter your email"
+        required
+      />
+      <button type="submit" disabled={loading}>
+        {loading ? 'Sending...' : 'Reset Password'}
+      </button>
+      {message && <p className="success">{message}</p>}
+      {error && <p className="error">{error}</p>}
+    </form>
+  );
 }
 
 export default Forgot

@@ -6,7 +6,7 @@ import Nav from './Nav';
 import Home from '../component/home/Home';
 import Login from '../component/Login';
 import Register from '../component/Register';
-import Profile from '../component/Profile';
+import Profile from '../component/profile/Profile';
 import Forgot from '../component/Forgot';
 import Store from '../component/Store';
 import Product from '../component/Product';

@@ -11,24 +11,26 @@ import {Input} from "../../components/ui/input"
 import "./style.css"
 import BingMap from '../BingMap';
 import { createOrder } from '../../redux/actions/orderActions';
+import axios from 'axios';
 
 
 const Checkout = () => {
 
-  const [order, setOrder] = useState(
-    {first_name: '',
+  const [order, setOrder] = useState({
+    first_name: '',
     last_name: '',
     address: '',
     phone: '',
     email: '',
     city: '',
     zip_code: '',
-
+    country: '',
   });
 
 
-
   const stripe_url = useSelector((state) => state.order.order?.stripe_url);
+  const [shippingCost, setShippingCost] = useState(0.0);
+
 
   const [loadKey, setLoadKey] = useState(Date.now());
   const cartItems = useSelector((state) => state.cart.cart);
@@ -39,13 +41,22 @@ const Checkout = () => {
 
   const user = useSelector((state) => state.user.user);
 
-  const handleLocationSelect = (address, zip_code, city) => {
+  const handleLocationSelect = async (address, zip_code, adminDistrict2, country) => {
     setOrder((prevOrder) => ({
       ...prevOrder,
       address,
       zip_code,
-      city,
+      city:adminDistrict2,
+      country,
     }));
+  
+    try {
+      const response = await axios.post('/calculate-shipping', { city:adminDistrict2, country });
+      setShippingCost(parseFloat(response.data.shippingCost));
+    } catch (error) {
+      console.error('Error calculating shipping cost:', error.message);
+      setShippingCost(0.0); // Set a default value in case of error
+    }
   };
 
   useEffect(() => {
@@ -92,8 +103,15 @@ const Checkout = () => {
   };
 
 
-  const calculateTotal = () => {
+
+  const calculateSubtotal = () => {
     return cartItems.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
+  };
+  
+  const calculateTotal = () => {
+    const subtotal = parseFloat(calculateSubtotal());
+    const total = subtotal + (typeof shippingCost === 'number' ? shippingCost : 0);
+    return total.toFixed(2);
   };
 
   return (
@@ -211,18 +229,18 @@ const Checkout = () => {
                 <p>${(item.price * item.quantity).toFixed(2)}</p>
               </div>
             ))}
-            <div className="flex justify-between items-center mt-4 border-t pt-4">
-              <p className="font-semibold">Subtotal</p>
-              <p>${calculateTotal()}</p>
-            </div>
-            <div className="flex justify-between items-center mt-4 border-t pt-4">
-              <p className="font-semibold">Shipping</p>
-              <p>Free</p>
-            </div>
-            <div className="flex justify-between items-center mt-4 border-t pt-4">
-              <p className="font-semibold">Total</p>
-              <p>${calculateTotal()}</p>
-            </div>
+          <div className="flex justify-between items-center mt-4 border-t pt-4">
+            <p className="font-semibold">Subtotal</p>
+            <p>${calculateSubtotal()}</p>
+          </div>
+          <div className="flex justify-between items-center mt-4 border-t pt-4">
+            <p className="font-semibold">Shipping</p>
+            <p>${shippingCost.toFixed(2)}</p>
+          </div>
+          <div className="flex justify-between items-center mt-4 border-t pt-4">
+            <p className="font-semibold">Total</p>
+            <p>${calculateTotal()}</p>
+          </div>
             <button
               onClick={handleSubmit}
               className="bg-blue-500 text-white w-full py-2 mt-4 rounded"

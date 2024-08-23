@@ -56,7 +56,7 @@ const Store = () => {
   const user = useSelector((state) => state.user.user);
   const favorites = useSelector(selectFavorites);
   const prevFilters = useRef(filters);
-const prevSortOption = useRef(sortOption);
+  const prevSortOption = useRef(sortOption);
 
 
   const debouncedSearchKey = useDebounce(searchKey, 500);
@@ -79,7 +79,7 @@ const prevSortOption = useRef(sortOption);
       }
      
       try {
-        await dispatch(fetchProducts(1, sortOption, newFilters.selectedCategories, newFilters.selectedBrands, newFilters.priceRange));
+       dispatch(fetchProducts(1, sortOption, newFilters.selectedCategories, newFilters.selectedBrands, newFilters.priceRange));
       } finally {
        
         setInitialLoadComplete(true);

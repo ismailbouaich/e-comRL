@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use App\Mail\OrderSuccessEmail;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\ShippingZone;
 use Illuminate\Support\Facades\Mail;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -56,6 +57,8 @@ class OrderController extends Controller
             'address' => 'required',
             'zip_code' => 'required',
             'city' => 'required',
+            'country' => 'required',
+            
         ]);
     
         // Find an available delivery worker
@@ -84,6 +87,7 @@ class OrderController extends Controller
             }
           
             // $discountedPrice = $this->getDiscountedPrice($product, $item['quantity']);
+
             $unitPrice = $this->getDiscountedPrice($product, 1);
           
             $product->decrement('stock_quantity', $item['quantity']);
@@ -104,6 +108,27 @@ class OrderController extends Controller
         } catch (\Stripe\Exception\ApiErrorException $e) {
             return response()->json(['error' => 'Stripe API error: ' . $e->getMessage()], 500);
         }
+
+        $shippingCost = ShippingZone::calculateShipping($validatedData['city'], $validatedData['country']);
+
+        $lineItems[] = [
+            'price_data' => [
+                'currency' => 'usd',
+                'product_data' => [
+                    'name' => 'Shipping',
+                    'description' => 'Shipping cost',
+                ],
+                'unit_amount' => $shippingCost * 100, // Convert to cents
+            ],
+            'quantity' => 1,
+        ];
+        $checkout_session = $stripe->checkout->sessions->create([
+            'payment_method_types' => ['card'],
+            'line_items' => $lineItems,
+            'mode' => 'payment',
+            'success_url' => route('checkout.success', [], true) . "?session_id={CHECKOUT_SESSION_ID}",
+            'cancel_url' => route('checkout.failed', [], true),
+        ]);
     
         DB::beginTransaction();
         try {
@@ -115,6 +140,7 @@ class OrderController extends Controller
                 'customer_id' => $validatedData['customer_id'],
                 'delivery_worker_id' => $deliveryWorker->id,
                 'session_id' => $checkout_session->id,
+                'shipping_cost' => $shippingCost,
             ]);
     
             foreach ($validatedData['products'] as $item) {
@@ -188,8 +214,10 @@ class OrderController extends Controller
     
     
     
-            private function formatLineItem($product, $unitPrice, $quantity) {
-                $unitPriceInCents = $unitPrice * 100;
+     private function formatLineItem($product, $unitPrice, $quantity)
+     
+     {
+        $unitPriceInCents = $unitPrice * 100;
             return [
                 'price_data' => [
                 'currency' => 'usd',
@@ -201,8 +229,20 @@ class OrderController extends Controller
                 ],
                 'quantity' => $quantity,
             ];
+         }
+
+    public function calculateShipping(Request $request)
+            {
+                $validatedData = $request->validate([
+                    'city' => 'required',
+                    'country' => 'required',
+                ]);
+
+                $shippingCost = ShippingZone::calculateShipping($validatedData['city'], $validatedData['country']);
+
+                return response()->json(['shippingCost' => $shippingCost]);
             }
-    
+                
     public function success(Request $request)
     {
         
@@ -305,17 +345,49 @@ class OrderController extends Controller
     {
         
 
-        $orders = DB::table('orders')
-    ->join('users', 'orders.customer_id', '=', 'users.id')
-    ->join('order_details','orders.id','=','order_details.orders_id')
-    ->join('products','order_details.product_id','=','products.id')
-    ->select('orders.id','orders.created_at as Date', 'products.product_name','orders.status','order_details.total_price as Total')
-    ->where('orders.customer_id', $userId)
-    ->get();
+     $orders = DB::table('orders')
+     ->join('order_details', 'orders.id', '=', 'order_details.order_id')
+     ->join('products', 'order_details.product_id', '=', 'products.id')
+     ->select(
+         'orders.id as order_id',
+         'orders.status',
+         'orders.created_at as order_date',
+         'products.product_name',
+         'order_details.quantity',
+         'order_details.total_price',
+         'order_details.city',
+         'order_details.address',
+         'order_details.zip_code'
+     )
+     ->where('orders.customer_id', $userId)
+     ->get();
 
-     return response()->json($orders);
+ $groupedOrders = $orders->groupBy('order_id')->map(function ($order) {
+     $firstItem = $order->first();
+     return [
+         'order_id' => $firstItem->order_id,
+         'status' => $firstItem->status,
+         'order_date' => $firstItem->order_date,
+         'products' => $order->map(function ($item) {
+             return [
+                 'name' => $item->product_name,
+                 'quantity' => $item->quantity,
+                 'total' => $item->total_price
+             ];
+         }),
+         'subtotal' => $order->sum('total_price'),
+         'shipping' => 17.00, // You might want to make this dynamic
+         'total' => $order->sum('total_price'),
+         'shipping_address' => [
+             'city' => $firstItem->city,
+             'address' => $firstItem->address,
+             'zip_code' => $firstItem->zip_code
+         ],
+         'note' => 'new order' // You might want to store this in the database
+     ];
+ })->values();
 
-
+ return response()->json($groupedOrders);
 
     }
 

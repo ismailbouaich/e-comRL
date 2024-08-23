@@ -12,6 +12,16 @@ import App from './App';
 import { I18nextProvider } from 'react-i18next';
 import i18n from './i18n';
 
+
+import { fetchCategories } from './redux/actions/categoryActions';
+import { fetchUserData } from './redux/actions/userActions';
+import { fetchProducts } from './redux/actions/productActions';
+import { fetchBrands } from './redux/actions/brandActions';
+
+// Fetch all the data upfront
+
+
+
 axios.defaults.baseURL=`http://127.0.0.1:8000/api`;
 
 

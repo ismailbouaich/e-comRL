@@ -2,13 +2,15 @@ import  { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 
-const EditUser = () => {
+const EditUser = ({user}) => {
   const { id } = useParams();
-  const [user, setUser] = useState({});
+  const [juser, setUser] = useState({});
   const [editedUser, setEditedUser] = useState({
     name: '', // Initialize with an empty string
-    email: '', // Initialize with an empty string
-    // Add other user properties you want to edit
+    email: '',
+    password:'',
+    password_confirmation: '',
+
   });
 
   useEffect(() => {
@@ -56,7 +58,7 @@ const EditUser = () => {
             type="text"
             className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
             name="name"
-            value={editedUser.name}
+            value={user.name}
             onChange={handleInputChange}
           />
           </div>
@@ -68,13 +70,37 @@ const EditUser = () => {
             type="text"
             className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
             name="email"
-            value={editedUser.email}
+            value={user.email}
+            onChange={handleInputChange}
+          />
+          </div>
+        </div>
+        <div className="relative sm:col-span-2">
+          <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">Password</label>
+          <div className="mt-2">
+          <input
+            type="password"
+            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+            name="password"
+            value={editedUser.password}
+            onChange={handleInputChange}
+          />
+          </div>
+        </div>
+        <div className="relative sm:col-span-2">
+          <label htmlFor="password_confirmation" className="block text-sm font-medium leading-6 text-gray-900">Password Confirmation</label>
+          <div className="mt-2">
+          <input
+            type="password"
+            className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+            name="password_confirmation"
+            value={editedUser.password_confirmation}
             onChange={handleInputChange}
           />
           </div>
         </div>
         
-        {/* Add other input fields for editing user data */}
+       
 
       </div>
       </div>

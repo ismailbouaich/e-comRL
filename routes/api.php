@@ -90,8 +90,12 @@ Route::get('/failed', [OrderController::class, 'failed'])->name('checkout.failed
 
 
 
-Route::post('/orders/{userId}', [OrderController::class, 'orderHistory']);
+Route::get('/orders/{userId}', [OrderController::class, 'orderHistory']);
 Route::get('/generateQrCode', [OrderController::class, 'generateQrCode']);
+
+
+
+Route::post('/calculate-shipping', [OrderController::class, 'calculateShipping']);
 
 
 
