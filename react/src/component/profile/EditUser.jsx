@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 
 const EditUser = ({user}) => {
   const { id } = useParams();
-  const [juser, setUser] = useState({});
+  const [user, setUser] = useState({});
   const [editedUser, setEditedUser] = useState({
     name: '', // Initialize with an empty string
     email: '',
