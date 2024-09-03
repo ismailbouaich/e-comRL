@@ -11,6 +11,21 @@
         </div>
     @endif
 
+    <div class="flex items-center justify-center space-x-4 my-8">
+        @for ($i = 1; $i <= $totalSteps; $i++)
+            <div class="flex items-center">
+                <div class="rounded-full h-8 w-8 flex items-center justify-center {{ $currentStep >= $i ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-600' }}">
+                    {{ $i }}
+                </div>
+                <div class="text-sm ml-2">
+                    Step {{ $i }}
+                </div>
+            </div>
+            @if ($i < $totalSteps)
+                <div class="flex-grow h-0.5 {{ $currentStep > $i ? 'bg-blue-500' : 'bg-gray-300' }}"></div>
+            @endif
+        @endfor
+    </div>
     <form wire:submit.prevent="submitForm">
         @foreach ($steps as $key => $step)
             <div class="{{ $currentStep === $key ? 'block' : 'hidden' }} space-y-12">

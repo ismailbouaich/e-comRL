@@ -3,10 +3,10 @@
     <x-header-component 
     :breadcrumb="[
         ['label' => 'List', 'url' => '#'], 
-        ['label' => 'Categories', 'url' => '#']
+        ['label' => 'Shipping Zones', 'url' => '#']
     ]" 
-    button-text="New Category" 
-    button-link="create/category"
+    button-text="New Shipping Zone" 
+    button-link="create/shipping-zone"
     :show-button="true" 
 />
     <livewire:tables.categories-table/>

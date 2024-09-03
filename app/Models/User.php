@@ -95,7 +95,7 @@ class User extends Authenticatable
             $query->where('name', 'delivery_worker');
         })
         ->whereDoesntHave('assignedOrders', function ($query) {
-            $query->where('status', 'not_complete');
+            $query->where('status', ['onProgress','paid']);
         })
         ->inRandomOrder()
         ->first();

@@ -32,26 +32,21 @@ const OrderHistoryContainer = ({ userId, children }) => {
 
 
 const Profile = () => {
-  const navigate = useNavigate();
+  
 
   const user = useSelector((state) => state.user.user);
   const dispatch = useDispatch();
 
-  const orders = useSelector((state) => state.order.orders);
 
 const handleLogout = () => {
   dispatch(logoutUser());
-  navigate('/login');
+
 };
- useEffect(() => {
-    if (!localStorage.getItem('token')) {
-      return navigate('/login');
-    }
-  }, [navigate]);
+
 
 
   if (!user) {
-    return <div><LoadingSpinner/></div>;
+    return <div className='p-20'><LoadingSpinner/></div>;
   }
 
   return (

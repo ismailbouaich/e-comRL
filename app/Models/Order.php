@@ -9,12 +9,12 @@ use MBarlow\Megaphone\HasMegaphone;
 
 class Order extends Model
 {
-    use HasFactory ,  Notifiable;
+    use HasFactory ;
     use HasMegaphone;
 
     protected $table = 'orders'; // Name of the orders table
     protected $fillable = [
-        'first_name','last_name', 'email','phone', 'customer_id', 'delivery_worker_id', 'status','is_assigned','session_id','shipping_cost'
+        'first_name','last_name', 'email','phone', 'customer_id', 'delivery_worker_id', 'status','is_assigned','session_id','shipping_cost','latitude', 'longitude'
 
     ];
 

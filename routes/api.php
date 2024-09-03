@@ -43,8 +43,11 @@ Route::post('/register',[AuthController::class,'register']);
 Route::post('/forgetPassword',[ForgetController::class,'forgetPassword']);
 Route::post('/resetPassword',[ResetController::class,'resetPassword']);
 
+Route::middleware('auth:api')->get('/delivery-worker/orders', [DeliveryController::class, 'getDeliveryWorkerOrders']);
 
+Route::middleware('auth:api')->post('/delivery-worker/orders/{orderId}', [DeliveryController::class, 'acceptOrder']);
 
+Route::middleware('auth:api')->post('/delivery-worker/orders/complete/{orderId}', [DeliveryController::class, 'completeOrder']);
 
 //store routes
 
@@ -69,9 +72,10 @@ Route::get('/brands',[ProductController::class,'brand']);
 Route::get('/product/{id}',[ProductController::class,'show']);
 
 Route::get('/search/{searchKey}',[ProductController::class,'search']);
+Route::post('/user/validate-password', [UserController::class, 'validatePassword'])->middleware('auth:api');
 
 
-Route::post('/order/complete', [DeliveryController::class, 'completeOrder']);
+
 
 
 //order Routes

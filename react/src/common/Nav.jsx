@@ -3,10 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { logoutUser } from '../redux/actions/userActions';
 import ShoppingCart from './ShoppingCart';
-import { FaSearch, FaUser, FaChevronDown } from 'react-icons/fa';
+import { FaSearch, FaUser, FaChevronDown, FaHome, FaBars } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 
-const Nav = () => {
+
+const Nav = ({ openAuthModal }) => {
   const { t, i18n } = useTranslation(); // Initialize translation
 
   const links = [
@@ -19,7 +20,9 @@ const Nav = () => {
   const [isTransitionEnded, setIsTransitionEnded] = useState(false);
   const [isLangDropdownOpen, setIsLangDropdownOpen] = useState(false);
 
-  const navigate = useNavigate();
+
+
+  
   const dispatch = useDispatch();
 
   const toggleMenu = useCallback(() => {
@@ -39,7 +42,7 @@ const Nav = () => {
 
   const handleLogout = () => {
     dispatch(logoutUser());
-    navigate('/login');
+    
   };
 
   const isLoggedIn = !!localStorage.getItem('token');
@@ -49,19 +52,20 @@ const Nav = () => {
       {t('Logout')}
     </Link>
   ) : (
-    <Link className="text-gray-600 hover:text-gray-800" to="/login">
-      {t('Sign In')}
-    </Link>
+    <button onClick={openAuthModal}>Sign In / Register</button>
   );
 
   const profile = isLoggedIn ? (
+    <>
     <Link className="text-gray-600 hover:text-gray-800" to="/profile">
       {t('Profile')}
     </Link>
-  ) : (
-    <Link className="text-gray-600 hover:text-gray-800" to="/register">
-      {t('Sign Up')}
+    <Link className="text-gray-600 hover:text-gray-800" onClick={handleLogout}>
+      {t('Logout')}
     </Link>
+    </>
+  ) : (
+    <button onClick={openAuthModal}>Sign In / Register</button>
   );
 
   const changeLanguage = (lng) => {
@@ -74,15 +78,12 @@ const Nav = () => {
   return (
     <header className='w-full sm:h-20 lg:h-24 relative z-20'>
       <nav className="bg-white shadow-md">
+      
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold">CHAWK BAZAR</Link>
+          <Link to="/" className="text-2xl font-bold">Ismail Bouaichi</Link>
 
           <div className="hidden lg:flex space-x-6">
-            {links.map((link, index) => (
-              <Link key={index} to={link.path} className="text-gray-600 hover:text-gray-800">
-                {link.name}
-              </Link>
-            ))}
+           
             <div 
               className="relative cursor-pointer"
               onMouseEnter={() => setIsDropdownOpen(true)}
@@ -101,8 +102,7 @@ const Nav = () => {
                 <FaChevronDown className="ml-1 text-xs" />
               </span>
             </div>
-            <Link to="/search" className="text-gray-600 hover:text-gray-800">{t('Search')}</Link>
-            <Link to="/shops" className="text-gray-600 hover:text-gray-800">{t('Shops')}</Link>
+            <Link to="/store" className="text-gray-600 hover:text-gray-800">{t('Store')}</Link>
             <div className="relative cursor-pointer">
               <span className="flex items-center">
                 {t('Pages')}
@@ -139,9 +139,8 @@ const Nav = () => {
                 </div>
               )}
             </div>
-            <FaSearch className="text-gray-600 text-xl" />
-            {buttons}
             {profile}
+           
             <div className="xxs:hidden">
               <ShoppingCart />
             </div>
@@ -213,6 +212,14 @@ const Nav = () => {
             </p>
           </div>
         </nav>
+      </div>
+
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around items-center h-16 z-40">
+        <button onClick={toggleMenu}><FaBars size={20} /></button>
+        <Link to="/search"><FaSearch size={20} /></Link>
+        <Link to="/"><FaHome size={20} /></Link>
+        <ShoppingCart />
+        <Link to="/profile"><FaUser size={20} /></Link>
       </div>
     </header>
   );

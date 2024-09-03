@@ -31,4 +31,9 @@ class Discount extends Model
         return $query->where('code', $code);
     }
 
+    public function scopeSearch($query,$value) {
+
+        $query->where('name','like',"%{$value}%"); 
+        
+    }
 }

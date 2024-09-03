@@ -22,10 +22,9 @@
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900 flex">
             <!-- Sidebar -->
-            <div class="flex bg-white dark:bg-gray-800">
+            <div class="flex bg-white dark:bg-gray-800 sticky top-0 h-screen overflow-y-auto">
                 <livewire:layout.sidebar/>
             </div>
-
             <!-- Main content -->
             <div class="flex-1">
                 <livewire:layout.navigation />
@@ -40,7 +39,7 @@
                 @endif
 
                 <!-- Page Content -->
-                <main>
+                <main class="p-6">
                     {{ $slot }}
                 </main>
             </div>

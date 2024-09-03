@@ -1,16 +1,10 @@
-
-    <div>
- 
-        <div id="order-chart"></div>
-       
+<div wire:ignore x-data="{ chart: null }" x-init="
+    chart = new ApexCharts($refs.chart, @js($options));
+    chart.render();
+    Livewire.on('refreshChart', newOptions => {
+        chart.updateOptions(newOptions);
+    });
   
-    <script>
-        var options = {!! json_encode($options) !!};
-        var chart = new ApexCharts(document.querySelector("#order-chart"), options);
-        chart.render();
-    </script>
-  
-    </div>
-       
-   
- 
+">
+    <div x-ref="chart" class="w-full h-64"></div>
+</div>

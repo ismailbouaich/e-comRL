@@ -47,14 +47,7 @@ const Success = () => {
 
     return (
         <div>
-            {message && <p>{message}</p>}
-            {order && (
-                <div>
-                    <h1>Order Details</h1>
-                    <p>Order ID: {order.id}</p>
-                    {/* Display other relevant order details */}
-                </div>
-            )}
+            sss
             
             {qrCodeBase64 && (
                 <div>

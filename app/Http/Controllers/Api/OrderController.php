@@ -62,14 +62,8 @@ class OrderController extends Controller
         ]);
     
         // Find an available delivery worker
-        $deliveryWorker = User::whereHas('role', function ($query) {
-            $query->where('name', 'delivery_worker');
-        })
-        ->whereDoesntHave('assignedOrders', function ($query) {
-            $query->where('status', 'not_complete');
-        })
-        ->inRandomOrder()
-        ->first();
+        $deliveryWorker = User::findAvailableDeliveryWorker();
+
     
         if (!$deliveryWorker) {
             return response()->json(['message' => 'No available delivery worker. Please try again later.'], 500);
@@ -141,6 +135,8 @@ class OrderController extends Controller
                 'delivery_worker_id' => $deliveryWorker->id,
                 'session_id' => $checkout_session->id,
                 'shipping_cost' => $shippingCost,
+                'latitude'=>$request->latitude
+                , 'longitude'=>$request->longitude
             ]);
     
             foreach ($validatedData['products'] as $item) {
@@ -169,8 +165,7 @@ class OrderController extends Controller
                 $notification = new \MBarlow\Megaphone\Types\Important(
                     'New Order Placed',
                     'A new order has been placed by ' . $validatedData['first_name'] .$validatedData['last_name']. '.',
-                    'https://example.com/order-details', // Optional: URL
-                    'View Order Details' // Optional: Link Text
+                    'http://127.0.0.1:8000/orders/'. $order->id,
                 );
                 $admin->notify($notification);
             }
@@ -286,11 +281,44 @@ class OrderController extends Controller
         return redirect('http://localhost:3000/failed');
     }
     
-    public function cancel(Request $request)
+       public function cancel(Request $request)
     {
-       
-        return redirect('http://localhost:3000/failed');
-
+        $validatedData = $request->validate([
+            'order_id' => 'required|exists:orders,id',
+        ]);
+    
+        $order = Order::find($validatedData['order_id']);
+    
+        if ($order->status === 'canceled') {
+            return response()->json(['message' => 'Order is already canceled.'], 400);
+        }
+    
+        if ($order->status === 'paid') {
+           
+            try {
+                $stripe = new StripeClient(env('STRIPE_SECRET'));
+                $refund = $stripe->refunds->create([
+                    'payment_intent' => $order->session_id,
+                ]);
+    
+                if ($refund->status !== 'succeeded') {
+                    return response()->json(['message' => 'Failed to process refund. Please try again.'], 500);
+                }
+            } catch (\Stripe\Exception\ApiErrorException $e) {
+                return response()->json(['message' => 'Stripe API error: ' . $e->getMessage()], 500);
+            }
+        }
+    
+        $order->status = 'canceled';
+        $order->save();
+    
+        $orderDetails = $order->orderDetails;
+        foreach ($orderDetails as $orderDetail) {
+            $product = Product::find($orderDetail->product_id);
+            $product->increment('stock_quantity', $orderDetail->quantity);
+        }
+    
+        return response()->json(['message' => 'Order has been canceled and payment refunded successfully.'], 200);
     }
     
     public function webhook()

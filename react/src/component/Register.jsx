@@ -5,7 +5,7 @@ import { registerUser } from '../redux/actions/userActions';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 
-const Register = () => {
+const Register = ({ onClose, onSwitchToLogin }) => {
   const [createUser, setCreateUser] = useState({
     name: '',
     email: '',
@@ -66,79 +66,64 @@ const Register = () => {
   }, [user, navigate]);
 
   return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-md">
-        <h3 className="text-2xl font-bold text-center mb-4">Register Account</h3>
-        {error && <span className="text-red-500 block mb-4">{error}</span>}
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="Name" className="block font-medium mb-2">
-              Full Name
-            </label>
-            <Input
-              type="text"
-              name="name"
-              value={createUser.name}
-              onChange={handleInputChange}
-              placeholder="Full Name"
-            />
-            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
-          </div>
-          <div className="mb-4">
-            <label htmlFor="email" className="block font-medium mb-2">
-              Email Address
-            </label>
-            <Input
-              type="email"
-              name="email"
-              value={createUser.email}
-              onChange={handleInputChange}
-              autoComplete="off"
-              placeholder="Email Address"
-            />
-            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-          </div>
-          <div className="mb-4">
-            <label htmlFor="password" className="block font-medium mb-2">
-              Password
-            </label>
-            <Input
-              type="password"
-              name="password"
-              value={createUser.password}
-              onChange={handleInputChange}
-              autoComplete="off"
-              placeholder="Password"
-            />
-            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
-          </div>
-          <div className="mb-4">
-            <label htmlFor="password_confirmation" className="block font-medium mb-2">
-              Password Confirmation
-            </label>
-            <Input
-              type="password"
-              name="password_confirmation"
-              value={createUser.password_confirmation}
-              onChange={handleInputChange}
-              autoComplete="off"
-              placeholder="Confirm Password"
-            />
-            {errors.password_confirmation && <p className="text-red-500 text-sm mt-1">{errors.password_confirmation}</p>}
-          </div>
-          <div className="mb-4">
-            <Button type="submit" disabled={loading} className="w-full">
-              {loading ? 'Registering...' : 'Register'}
-            </Button>
-          </div>
-        </form>
-        <div className="text-center mt-4">
-          <Link to="/login" className="text-indigo-500 hover:text-indigo-600">
-            Already Have an Account?
-          </Link>
-        </div>
+    <div className="w-full max-w-md mx-auto">
+    {error && <div className="text-red-500 text-center mb-4">{error}</div>}
+    <h2 className="text-2xl font-bold text-center mb-6">Register Account</h2>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Input
+          type="text"
+          name="name"
+          value={createUser.name}
+          onChange={handleInputChange}
+          placeholder="Full Name"
+          className="w-full"
+        />
+        {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
       </div>
+      <div>
+        <Input
+          type="email"
+          name="email"
+          value={createUser.email}
+          onChange={handleInputChange}
+          placeholder="Email Address"
+          className="w-full"
+        />
+        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+      </div>
+      <div>
+        <Input
+          type="password"
+          name="password"
+          value={createUser.password}
+          onChange={handleInputChange}
+          placeholder="Password"
+          className="w-full"
+        />
+        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+      </div>
+      <div>
+        <Input
+          type="password"
+          name="password_confirmation"
+          value={createUser.password_confirmation}
+          onChange={handleInputChange}
+          placeholder="Confirm Password"
+          className="w-full"
+        />
+        {errors.password_confirmation && <p className="text-red-500 text-sm mt-1">{errors.password_confirmation}</p>}
+      </div>
+      <Button type="submit" disabled={loading} className="w-full text-white py-2 rounded">
+        {loading ? 'Registering...' : 'Register'}
+      </Button>
+    </form>
+    <div className="text-center mt-4">
+      <button onClick={onSwitchToLogin} className="text-indigo-600 hover:text-indigo-800">
+        Already Have an Account?
+      </button>
     </div>
+  </div>
   );
 };
 

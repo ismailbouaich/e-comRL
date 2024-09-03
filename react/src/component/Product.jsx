@@ -8,6 +8,7 @@ import CommentForm from './CommentForm';
 import CommentList from './CommentList';
 import { Button } from '../components/ui/button';
 import StarRatingd from './AvgRating';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const Product = () => {
   const { id } = useParams();
@@ -26,11 +27,6 @@ const Product = () => {
   const orderError = useSelector((state) => state.order.error);
   const stripe_url = useSelector((state) => state.order.order?.stripe_url);
 
-  useEffect(() => {
-    if (!localStorage.getItem('token')) {
-      navigate('/login');
-    }
-  }, [navigate]);
 
   useEffect(() => {
     dispatch(fetchProduct(id));
@@ -77,7 +73,7 @@ const Product = () => {
     setSelectedImage(imagePath);
   };
 
-  if (loading) return <p className="text-center">Loading...</p>;
+  if (loading) return <p className="text-center"><LoadingSpinner/></p>;
   if (!product) return <p className="text-center">No product found.</p>;
 
 

@@ -1,8 +1,8 @@
 <x-app-layout>
     <x-header-component 
     :breadcrumb="[
-        ['label' => 'List', 'url' => '/categories'], 
-        ['label' => 'categories', 'url' => '/categories']
+        ['label' => 'List', 'url' => '/brands'], 
+        ['label' => 'categories', 'url' => '/brands']
     ]" 
     
     :show-button="false" 

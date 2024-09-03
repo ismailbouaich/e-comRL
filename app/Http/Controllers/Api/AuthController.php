@@ -83,30 +83,35 @@ public function register(RegisterRequest $request)
 
 
 
-    public function loginDelivery(Request $request)
-    {
-        try {
-            if (Auth::attempt($request->only('email', 'password'))) {
-                $user = Auth::user();
-                if ($user->hasRole('delivery_worker')) {
-                    $token = $user->createToken('app')->accessToken;
-                    return response([
-                        'message' => 'Successfully Login',
-                        'token' => $token,
-                        'user' => $user
-                    ], 200);
-                } else {
-                    return response([
-                        'message' => 'You do not have the rights to access',
-                    ], 403);
-                }
+public function loginDelivery(Request $request)
+{
+    try {
+        if (Auth::attempt($request->only('email', 'password'))) {
+            $user = Auth::user();
+            if ($user->hasRole('delivery_worker')) {
+                $token = $user->createToken('app')->accessToken;
+                return response([
+                    'message' => 'Successfully Login',
+                    'token' => $token,
+                    'user' => $user
+                ], 200);
+            } else {
+                return response([
+                    'message' => 'You do not have the rights to access',
+                ], 403);
             }
-        } catch (\Exception $exception) {
-            return response(['message' =>'eeeeeeeee']);
+        } else {
+            return response([
+                'message' => 'Invalid credentials',
+            ], 401);
         }
-    
-       
+    } catch (\Exception $exception) {
+        return response([
+            'message' => 'An error occurred during login',
+            'error' => $exception->getMessage()
+        ], 500);
     }
+}
 
     public function registerDelivery(Request $request)
     {

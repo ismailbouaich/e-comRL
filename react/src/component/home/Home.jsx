@@ -14,12 +14,7 @@ const Home = () => {
 
 
   const navigate=useNavigate();
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-      if (!token) {
-      return navigate('/login')
-    }
-  });
+  
 
   const categories = useSelector((state) => state.category.categories);
 

@@ -24,7 +24,8 @@
         }
 
         function handleMapClick(e) {
-            const { latitude, longitude } = e.location;
+            const latitude = e.location.latitude;
+            const longitude = e.location.longitude;
 
             for (let i = map.entities.getLength() - 1; i >= 0; i--) {
                 const pushpin = map.entities.get(i);
@@ -47,7 +48,15 @@
                     console.log('Livewire:', addressDetails);
 
                     
-                    Livewire.dispatch('updateAddress', { address: addressDetails.addressLine,city:addressDetails.adminDistrict2,zipCode:addressDetails.postalCode });
+                    Livewire.dispatch('updateAddress', { address: addressDetails.addressLine,
+                        city:addressDetails.adminDistrict2,
+                        zipCode:addressDetails.postalCode,
+                        longitude:longitude,
+                        latitude:latitude
+                     });
+
+               
+                     
 
                 })
                 .catch(error => {
@@ -55,6 +64,51 @@
                     alert('Failed to fetch address details. Please try again.');
                 });
         }
+
+
+        const handleSearch = (searchQuery) => {
+    if (searchManager && mapInstance.current) {
+      const searchRequest = {
+        where: searchQuery,
+        callback: function (r) {
+          if (r && r.results && r.results.length > 0) {
+            const firstResult = r.results[0];
+            mapInstance.current.setView({ bounds: firstResult.bestView });
+
+            mapInstance.current.entities.clear();
+            const pushpin = new window.Microsoft.Maps.Pushpin(firstResult.location);
+            mapInstance.current.entities.push(pushpin);
+
+            const location = firstResult.location;
+            const url = `https://dev.virtualearth.net/REST/v1/Locations/${location.latitude},${location.longitude}?o=json&key=${Apikey}`;
+
+            fetch(url)
+              .then(response => response.json())
+              .then(data => {
+                const addressDetails = data.resourceSets[0].resources[0].address;
+                Livewire.dispatch('updateAddress', { 
+                    address: addressDetails.addressLine,
+                    city:addressDetails.adminDistrict2,
+                    zipCode:addressDetails.postalCode,
+                    latitude:addressDetails.location.latitude,
+                    longitude:addressDetails.location.longitude 
+                });
+
+                console.log(location.longitude );
+              })
+              .catch(error => {
+                setError(error);
+              });
+          }
+        },
+        errorCallback: function (e) {
+          setError(e);
+        }
+      };
+      searchManager.geocode(searchRequest);
+    }
+  };
+
 
         if (!window.Microsoft) {
             var script = document.createElement('script');

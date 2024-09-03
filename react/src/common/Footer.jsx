@@ -50,11 +50,7 @@ const Footer = () => {
       <div className="absolute bottom-0 left-0 right-0 bg-gray-100 py-4 border-t">
         <div className="container mx-auto flex justify-center">
           <div className="flex space-x-4">
-            <img src="/mastercard.png" alt="Mastercard" className="h-8" />
-            <img src="/visa.png" alt="Visa" className="h-8" />
-            <img src="/paypal.png" alt="PayPal" className="h-8" />
-            <img src="/jcb.png" alt="JCB" className="h-8" />
-            <img src="/skrill.png" alt="Skrill" className="h-8" />
+            
           </div>
         </div>
       </div>

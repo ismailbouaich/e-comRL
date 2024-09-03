@@ -169,10 +169,10 @@ class ProductController extends Controller
     try {
         $key = $request->searchKey;
 
-        // Generate a unique cache key based on the search key
+        
         $cacheKey = "search_{$key}";
 
-        // Check if the results are already cached
+       
         $products = Cache::remember($cacheKey, 600, function() use ($key) {
             return Product::with(['images', 'category', 'discounts', 'brand'])
                          ->search($key)

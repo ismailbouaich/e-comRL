@@ -1,12 +1,13 @@
+
 <x-app-layout>
     <x-header-component 
     :breadcrumb="[
         ['label' => 'List', 'url' => '#'], 
-        ['label' => 'Roles', 'url' => '#']
+        ['label' => 'Brand', 'url' => '#']
     ]" 
-    button-text="New Role" 
-    button-link="create/role"
+    button-text="New Brand" 
+    button-link="create/brand"
     :show-button="true" 
 />
-    <livewire:tables.roles-table/>
+    <livewire:tables.brands-tables/>
 </x-app-layout>

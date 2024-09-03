@@ -45,7 +45,8 @@ const BingMap = ({ onLocationSelect }) => {
   }, []);
 
   const handleMapClick = (e) => {
-    const { latitude, longitude } = e.location;
+    const latitude = e.location.latitude;
+    const longitude = e.location.longitude;
 
     if (mapInstance.current && mapInstance.current.entities) {
       mapInstance.current.entities.clear();
@@ -59,11 +60,16 @@ const BingMap = ({ onLocationSelect }) => {
       .then(response => response.json())
       .then(data => {
         const address = data.resourceSets[0].resources[0].address;
-        onLocationSelect(address.formattedAddress, address.postalCode, address.adminDistrict2,address.countryRegion);
+        onLocationSelect(address.formattedAddress, address.postalCode, address.adminDistrict2,address.countryRegion,latitude,longitude);
         console.log('Address:', address.formattedAddress);
         console.log('Postal Code:', address.postalCode);
         console.log('City:', address.adminDistrict2);
         console.log('Country:', address.countryRegion);
+        console.log(latitude);
+        console.log(longitude);
+
+
+
       })
       .catch(error => console.error('Error:', error));
   };
@@ -88,7 +94,7 @@ const BingMap = ({ onLocationSelect }) => {
               .then(response => response.json())
               .then(data => {
                 const address = data.resourceSets[0].resources[0].address;
-                onLocationSelect(address.formattedAddress, address.postalCode, address.adminDistrict2);
+                onLocationSelect(address.formattedAddress, address.postalCode, address.adminDistrict2,location.latitude,location.longitude);
               })
               .catch(error => {
                 setError(error);

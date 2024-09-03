@@ -25,12 +25,16 @@ const Checkout = () => {
     city: '',
     zip_code: '',
     country: '',
+    latitude:'',
+   longitude:''
   });
 
 
   const stripe_url = useSelector((state) => state.order.order?.stripe_url);
   const [shippingCost, setShippingCost] = useState(0.0);
+  const [tempShippingCost, setTempShippingCost] = useState(0.0);
 
+  const [tempLocationData, setTempLocationData] = useState(null);
 
   const [loadKey, setLoadKey] = useState(Date.now());
   const cartItems = useSelector((state) => state.cart.cart);
@@ -41,22 +45,34 @@ const Checkout = () => {
 
   const user = useSelector((state) => state.user.user);
 
-  const handleLocationSelect = async (address, zip_code, adminDistrict2, country) => {
-    setOrder((prevOrder) => ({
-      ...prevOrder,
-      address,
-      zip_code,
-      city:adminDistrict2,
-      country,
-    }));
+  const handleLocationSelect = async (address, zip_code, adminDistrict2, country , latitude,
+    longitude,) => {
+    setTempLocationData({ address, zip_code, city: adminDistrict2, country });
   
     try {
-      const response = await axios.post('/calculate-shipping', { city:adminDistrict2, country });
+      const response = await axios.post('/calculate-shipping', { city: adminDistrict2, country });
       setShippingCost(parseFloat(response.data.shippingCost));
     } catch (error) {
       console.error('Error calculating shipping cost:', error.message);
-      setShippingCost(0.0); // Set a default value in case of error
+     
+      setTempShippingCost(0.0);
     }
+    setOrder(prevOrder => ({
+      ...prevOrder,
+      latitude,
+      longitude,
+    }));
+  };
+
+  const handleConfirmLocation = () => {
+    if (tempLocationData) {
+      setOrder(prevOrder => ({
+        ...prevOrder,
+        ...tempLocationData
+      }));
+      setShippingCost(tempShippingCost);
+    }
+   
   };
 
   useEffect(() => {
@@ -110,7 +126,7 @@ const Checkout = () => {
   
   const calculateTotal = () => {
     const subtotal = parseFloat(calculateSubtotal());
-    const total = subtotal + (typeof shippingCost === 'number' ? shippingCost : 0);
+    const total = subtotal + shippingCost;
     return total.toFixed(2);
   };
 
@@ -201,9 +217,13 @@ const Checkout = () => {
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                  <button className="bg-gray-500 text-white py-2 px-4 rounded mr-4">
-                    Confirm
-                  </button>
+
+                <DialogTrigger asChild>
+                <Button onClick={handleConfirmLocation}>
+              Confirm
+            </Button>
+                  </DialogTrigger>
+                  
                   <DialogTrigger asChild>
                     <button className="bg-gray-500 text-white py-2 px-4 rounded">
                       Cancel

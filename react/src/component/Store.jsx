@@ -267,21 +267,34 @@ const Store = () => {
           ))}
         </div>
          )}
-        {pagination && (
-          <Pagination>
-            <PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
-            <PaginationContent>
-              {Array.from({ length: pagination.totalPages }, (_, i) => (
-                <PaginationItem key={i}>
-                  <PaginationLink onClick={() => handlePageChange(i + 1)} active={i + 1 === currentPage}>
-                    {i + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-            </PaginationContent>
-            <PaginationNext onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === pagination.totalPages} />
-          </Pagination>
-        )}
+      {filteredProducts.length > 0 && pagination && (
+
+        <div className="mt-4">
+            <Pagination>
+    <PaginationPrevious 
+      onClick={() => handlePageChange(currentPage - 1)} 
+      disabled={currentPage === 1} 
+    />
+    <PaginationContent>
+      {Array.from({ length: pagination.totalPages }, (_, i) => (
+        <PaginationItem key={i}>
+          <PaginationLink 
+            onClick={() => handlePageChange(i + 1)} 
+            active={i + 1 === currentPage}
+          >
+            {i + 1}
+          </PaginationLink>
+        </PaginationItem>
+      ))}
+    </PaginationContent>
+    <PaginationNext 
+      onClick={() => handlePageChange(currentPage + 1)} 
+      disabled={currentPage === pagination.totalPages || filteredProducts.length === 0} 
+    />
+  </Pagination>
+        </div>
+)}
+
       </div>
     </div>
   );
