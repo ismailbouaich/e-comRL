@@ -76,7 +76,7 @@
             <div class="flex items-center">
                 <label for="product_ids" class="w-1/3 block text-sm font-medium text-gray-700">Product IDs:</label>
                 <div class="w-2/3">
-                    <select wire:model="product_id" id="product_id" name="product_id"  class="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <select wire:model="product_ids" id="product_ids" name="product_ids[]" multiple class="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                         @foreach ($products as $product)
                             <option value="{{ $product->id }}">{{ $product->product_name }}</option>
                         @endforeach

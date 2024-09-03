@@ -22,10 +22,6 @@ Route::view('/', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-Route::view('dashboard', 'dashboard')
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
-
 Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
@@ -49,6 +45,10 @@ Route::view('profile', 'profile')
     Route::view('categories', 'tables.category-table')
     ->middleware(['auth'])
     ->name('categories');
+
+    Route::view('brands', 'tables.brand-table')
+    ->middleware(['auth'])
+    ->name('brands');
 
     Route::view('create/user', 'forms.create.create-user')
     ->middleware(['auth'])
@@ -94,11 +94,13 @@ Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('orders.edit');
 
+    
+
     Route::view('/users/{userId}','forms.show.user-show')
     ->middleware(['auth'])
     ->name('users.show');
 
-    Route::view('/orders/{id}', 'forms.show.order-show')
+    Route::view('/orders/{orderId}', 'forms.show.order-show')
     ->middleware(['auth'])
     ->name('orders.show');
 

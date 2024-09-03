@@ -29,7 +29,7 @@ class CreateBrand extends Component
     {
         $this->validate();
 
-        $path = $this->logo_path->store('/images');
+        $path = $this->logo_path->store('/logo');
 
 
         $brand = Brand::create([

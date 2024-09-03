@@ -60,6 +60,7 @@ class OrderChart extends Component
             'chart' => [
                 'type' => 'area',
                 'height' => 350,
+                'width'=>'100%'
             ],
             'xaxis' => [
                 'categories' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],

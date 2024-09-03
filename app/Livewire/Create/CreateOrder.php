@@ -3,28 +3,29 @@
 namespace App\Livewire\Create;
 
 use App\Models\Order;
-use Livewire\Component;
 use App\Models\OrderDetail;
+use Livewire\Component;
 use Illuminate\Support\Str;
-
 
 class CreateOrder extends Component
 {
     public $currentStep = 1;
-    public $code;
-
-
+    public $totalSteps = 3; // Add this line
     public $steps = [
         1 => 'Customer Information',
         2 => 'Order Details',
     ];
+
     public $orderData = [
         'customer_name' => '',
         'customer_id' => '',
         'delivery_worker_id' => '',
         'status' => '',
         'session_id' => '',
+        'longitude'=>'',
+        'latitude'=>'',
     ];
+
     public $orderDetailsData = [
         [
             'product_id' => '',
@@ -52,16 +53,15 @@ class CreateOrder extends Component
 
     protected $listeners = ['updateAddress'];
 
-
-  
-    public function updateAddress($address, $city, $zipCode)
+    public function updateAddress($address, $city, $zipCode,$longitude,$latitude)
     {
         $this->orderDetailsData[0]['address'] = $address;
         $this->orderDetailsData[0]['city'] = $city;
         $this->orderDetailsData[0]['zip_code'] = $zipCode;
+        $this->orderData[0]['longitude']=$longitude;
+        $this->orderData[0]['latitude']=$latitude;
     }
 
-   
     public function render()
     {
         return view('livewire.create.create-order');
@@ -69,17 +69,27 @@ class CreateOrder extends Component
 
     public function generateSessionId()
     {
-
-        $this->orderData['session_id'] = Str::random(8); // Generate a random alphanumeric code
-        $this->orderData['session_id'] = strtoupper($this->orderData['session_id']); // Convert to uppercase for better readability (optional)
-    
-    
-    
+        $this->orderData['session_id'] = Str::random(8);
+        $this->orderData['session_id'] = strtoupper($this->orderData['session_id']);
     }
 
     public function goToStep($step)
     {
+        $this->validateStep($this->currentStep);
         $this->currentStep = $step;
+    }
+
+    public function validateStep($step)
+    {
+        if ($step == 1) {
+            $this->validate([
+                'orderData.customer_name' => 'required|string',
+                'orderData.customer_id' => 'required|integer',
+                'orderData.delivery_worker_id' => 'required|integer',
+                'orderData.status' => 'required|string',
+                'orderData.session_id' => 'required|string',
+            ]);
+        }
     }
 
     public function addOrderDetail()

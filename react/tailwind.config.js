@@ -14,7 +14,9 @@ module.exports = {
       padding: "2rem",
       screens: {
         "2xl": "1400px",
+        "xxs":"540px", // min-width
       },
+   
     },
     extend: {
       colors: {

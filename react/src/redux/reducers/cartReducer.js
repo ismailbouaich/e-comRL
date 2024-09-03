@@ -8,6 +8,7 @@ import {
   CREATE_CART_ITEMS_ORDER_REQUEST,
   CREATE_CART_ITEMS_ORDER_SUCCESS,
   CREATE_CART_ITEMS_ORDER_FAILURE,
+  CLEAR_CART 
 } from '../constants/cartitemsConstants';
 
 const initialState = {
@@ -37,7 +38,7 @@ const cartReducer = (state = initialState, action) => {
         ...state,
         cart: state.cart.map(item =>
           item.id === action.payload.productId
-            ? { ...item, quantity: action.payload.quantity }
+            ? { ...item, quantity: action.payload.newQuantity }
             : item
         ),
       };
@@ -64,9 +65,15 @@ const cartReducer = (state = initialState, action) => {
         loading: false,
         error: action.payload,
       };
+      case CLEAR_CART:
+        localStorage.removeItem(`cart_${action.payload}`); 
+      return {
+        ...state,
+        cart: [],
+      };
     default:
       return state;
   }
 };
 
-export default cartReducer
+export default cartReducer;

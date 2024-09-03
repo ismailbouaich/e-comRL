@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('discounts', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('product_id');
+           
             $table->string('name');
             $table->string('code')->unique();
             $table->enum('discount_type', ['percentage', 'fixed']);
@@ -21,7 +21,7 @@ return new class extends Migration
             $table->date('start_date');
             $table->date('end_date');
             $table->boolean('is_active')->default(true);
-            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
+          
             $table->timestamps();
         });
     }

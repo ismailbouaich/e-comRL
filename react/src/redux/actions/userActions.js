@@ -11,6 +11,9 @@ import {
     FETCH_USER_SUCCESS,
     FETCH_USER_FAILURE,
     LOGOUT_USER, 
+    USER_FORGET_PASSWORD_REQUEST,
+    USER_FORGET_PASSWORD_SUCCESS,
+    USER_FORGET_PASSWORD_FAILURE,
 } from '../constants/userConstants';
 
 export const loginUser = (email, password) => async (dispatch) => {
@@ -48,4 +51,26 @@ export const registerUser = (userData) => async (dispatch) => {
     } catch (error) {
         dispatch({ type: USER_REGISTER_FAILURE, payload: error.message });
     }
+};
+
+
+export const forgetPassword = (email) => async (dispatch) => {
+  dispatch({ type: USER_FORGET_PASSWORD_REQUEST });
+  try {
+    const response = await axios.post('/forgetPassword', { email });
+    
+    if (response.status === 200) {
+      dispatch({ 
+        type: USER_FORGET_PASSWORD_SUCCESS, 
+        payload: response.data.message 
+      });
+    } else {
+      throw new Error(response.data.message);
+    }
+  } catch (error) {
+    dispatch({ 
+      type: USER_FORGET_PASSWORD_FAILURE, 
+      payload: error.response ? error.response.data.message : error.message 
+    });
+  }
 };

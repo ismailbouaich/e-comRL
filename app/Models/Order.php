@@ -9,12 +9,13 @@ use MBarlow\Megaphone\HasMegaphone;
 
 class Order extends Model
 {
-    use HasFactory ,  Notifiable;
+    use HasFactory ;
     use HasMegaphone;
 
     protected $table = 'orders'; // Name of the orders table
     protected $fillable = [
-        'customer_name', 'customer_id', 'delivery_worker_id', 'status','is_assigned','session_id', 
+        'first_name','last_name', 'email','phone', 'customer_id', 'delivery_worker_id', 'status','is_assigned','session_id','shipping_cost','latitude', 'longitude'
+
     ];
 
     public function orderDetails()
@@ -37,7 +38,7 @@ class Order extends Model
     }
 
     public function scopeSearch($query, $value) {
-        $query->where('customer_name', 'like', "%{$value}%")
+        $query->where('first_name', 'like', "%{$value}%")
               ->orWhereHas('orderDetails', function($query) use ($value) {
                   $query->where('city', 'like', "%{$value}%");
               })

@@ -4,7 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class Product extends Model
 {
@@ -12,35 +14,21 @@ class Product extends Model
 
     protected $table = 'products'; // Name of the product table
     protected $fillable = ['product_name', 'description', 'price', 'stock_quantity','brand_id','category_id'];
-        
-    public function orderDetails()
-    {
-        return $this->hasMany(OrderDetail::class);
-    }
-   
-    public function discounts()
-    {
-        return $this->hasMany(Discount::class);
-    }
+  
 
-    public function currentDiscount()
-    {
-        return $this->discounts()->current()->first();
-    }   
-     public function images()
+    public function images()
     {
      return $this->hasMany(Image::class);
     }
-
+       public function brand()
+    {
+        return $this->belongsTo(Brand::class);
+    }
     public function category()
     {
         return $this->belongsTo(Category::class);
     }
 
-    public function brand()
-    {
-        return $this->belongsTo(Brand::class);
-    }
 
     public function scopeSearch($query, $value) {
         $query->where('product_name', 'like', "%{$value}%")
@@ -52,14 +40,38 @@ class Product extends Model
             })
               ->orWhere('price', 'like', "%{$value}%");
     }
-
-    //i added this part
-    public function favorites(): HasMany
+    public function orderDetails()
     {
-        return $this->hasMany(Favorite::class);
+        return $this->hasMany(OrderDetail::class);
+    }
+   
+    public function discounts()
+    {
+        return $this->belongsToMany(Discount::class, 'discount_product');
     }
 
-    public function getfavoriteAttribute(): bool
+    public function currentDiscount()
+    {
+        return $this->discounts()->current()->first();
+    }   
+ 
+   
+
+    //i added this part
+   
+
+     public function favorites(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'favorites');
+    }
+
+    public function ratings(): HasMany
+    {
+        return $this->hasMany(Rating::class);
+    }
+
+
+    public function getFavoriteAttribute(): bool
     {
         return (bool) $this->favorites()->where('product_id', $this->id)->where('user_id', auth()->id())->exists();
     }
@@ -68,4 +80,10 @@ class Product extends Model
     {
         return $this->hasMany(Comment::class);
     }
+
+    public function scopeWithAvgRating($query)
+    {
+        return $query->withAvg('ratings as avg_rating', 'rating');
+    }
+
 }

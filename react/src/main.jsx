@@ -8,7 +8,19 @@ import { Provider } from 'react-redux';
 import store from './redux/store';
 
 import'./index.css'
-import Footer from './common/footer';
+import App from './App';
+import { I18nextProvider } from 'react-i18next';
+import i18n from './i18n';
+
+
+import { fetchCategories } from './redux/actions/categoryActions';
+import { fetchUserData } from './redux/actions/userActions';
+import { fetchProducts } from './redux/actions/productActions';
+import { fetchBrands } from './redux/actions/brandActions';
+
+// Fetch all the data upfront
+
+
 
 axios.defaults.baseURL=`http://127.0.0.1:8000/api`;
 
@@ -23,8 +35,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <Provider store={store}>
     <ThemeProvider> 
       <BrowserRouter>
-          <Header />
-          <Footer/>
+      <I18nextProvider i18n={i18n}>
+      <App />
+      </I18nextProvider>
       </BrowserRouter>
     </ThemeProvider>
     </Provider>

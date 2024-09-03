@@ -1,5 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 const FlashSale = () => {
    
@@ -18,6 +20,7 @@ const FlashSale = () => {
         })
     },[]);
 
+    const user = useSelector((state) => state.user.user);
 
   return (
     <div className='mb-12 md:mb-14 xl:mb-16 border border-gray-300 rounded-md pt-5 md:pt-6 lg:pt-7 pb-5 lg:pb-7 px-4 md:px-5 lg:px-7'>
@@ -34,12 +37,13 @@ const FlashSale = () => {
             {bestsellingPrd.map((item,index) => {
          return (
         <div key={index} className='group box-border overflow-hidden flex rounded-md cursor-pointer ltr:pr-0 rtl:pl-0 md:pb-1 flex-col items-start bg-white'>
-            <div className='flex relative ltr:rounded-l-md rtl:rounded-r-md  mb-3 md:mb-3.5 pb-0 aspect-square w-full rounded-md overflow-hidden'>
+            <Link className='flex relative ltr:rounded-l-md rtl:rounded-r-md  mb-3 md:mb-3.5 pb-0 aspect-square w-full rounded-md overflow-hidden'  to={`/product/${item.id}`}
+                    state={{ user }}>
                 <img src={`http://127.0.0.1:8000/storage/${(item.images && item.images.length > 0 && item.images[0].file_path)}`}
                   alt={item.product_name} className='bg-gray-300 object-cover transition duration-150 ease-linear transform group-hover:scale-105' style={{
                     position:'absolute',height:'100%',width:'100%',left:'0',top:'0',right:'0',bottom:'0',color:'transparent'
                 }} sizes="(max-width: 768px) 100vw"/>
-            </div>
+            </Link>
             <div className="w-full overflow-hidden ltr:pl-0 rtl:pr-0">
                 <h2 className="text-heading font-semibold truncate mb-1 md:mb-1.5 text-sm sm:text-base md:text-sm lg:text-base xl:text-lg">
                 {item.product_name}

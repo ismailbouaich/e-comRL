@@ -22,10 +22,9 @@ class OrderDetail extends Model
     }
 
     public function product()
-        {
-            return $this->belongsToMany(Product::class)->withPivot('quantity');
-        }
-
+    {
+        return $this->belongsTo(Product::class); 
+    }
     public static function bestSellingProduct()
     {
         

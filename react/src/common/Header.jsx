@@ -1,14 +1,14 @@
+
 import  {  useEffect, useContext } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Nav from './Nav'
 import Home from '../component/home/Home';
 import Login from '../component/Login';
 import Register from '../component/Register';
-import Profile from '../component/Profile';
+import Profile from '../component/profile/Profile';
 import Forgot from '../component/Forgot';
 import Store from '../component/Store';
 import Product from '../component/Product';
-import Cart from '../component/Cart';
 
 
 import { ThemeContext } from '../theme/ThemeContext';
@@ -19,44 +19,70 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchUserData } from '../redux/actions/userActions';
 
 
+import { fetchCategories } from '../redux/actions/categoryActions';
+
+import { fetchBrands } from '../redux/actions/brandActions';
+import Checkout from '../component/checkout/Checkout';
+import ProtectedRoute from '../component/auth/ProtectedRoute';
+import { AuthContext } from '../component/auth/AuthProvider';
+
+import LoadingSpinner from '../components/LoadingSpinner';
 
 
 
 
 
-const Header = () => {
-  const { darkMode } = useContext(ThemeContext); // Access darkMode from ThemeContext
-
+const Header = ({ openAuthModal }) => {
+  const { darkMode } = useContext(ThemeContext);
+  const { isAuthenticated, isLoading } = useContext(AuthContext);
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.user);
 
-
- 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      dispatch(fetchUserData());
-    }
+    dispatch(fetchCategories());
+    dispatch(fetchBrands());
   }, [dispatch]);
+
+  if (isLoading) {
+    return <LoadingSpinner/>; // Or a loading spinner
+  }
+
   return (
     <div className={darkMode ? 'dark-mode' : 'light-mode'}>
-    <Nav />
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/profile" element={user ? <Profile /> : <Login />} />
-      <Route path="/forget" element={<Forgot />} />
-      <Route path="/store" element={<Store />} />
-      <Route path="/product/:id" element={<Product />} />
-      <Route path="/cart" element={<Cart />} />
-      <Route path="/success" element={<Success />} />
-      <Route path="/confirmed" element={<Confirmed />} />
-    </Routes>
-  </div>
+      <Nav openAuthModal={openAuthModal} isAuthenticated={isAuthenticated} />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route 
+          path="/profile" 
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="/forget" element={<Forgot />} />
+        <Route path="/store" element={<Store />} />
+        <Route path="/product/:id" element={
+          <ProtectedRoute>
+            <Product />
+          </ProtectedRoute>
+        } />
+        <Route path="/confirmed" element={
+          <ProtectedRoute>
+            <Confirmed />
+          </ProtectedRoute>
+        } />
+        <Route path='/checkout' element={
+          <ProtectedRoute>
+            <Checkout />
+          </ProtectedRoute>
+        } />
+      </Routes>
+    </div>
   );
 };
-
 
 
 export default Header;

@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use App\Mail\OrderSuccessEmail;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Models\ShippingZone;
 use Illuminate\Support\Facades\Mail;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -45,7 +46,10 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'customer_name' => 'required',
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'email' => 'required|email',
+            'phone' => 'required',
             'customer_id' => 'required',
             'products' => 'required|array|min:1',
             'products.*.product_id' => 'required|exists:products,id',
@@ -53,23 +57,19 @@ class OrderController extends Controller
             'address' => 'required',
             'zip_code' => 'required',
             'city' => 'required',
+            'country' => 'required',
+            
         ]);
     
         // Find an available delivery worker
-        $deliveryWorker = User::whereHas('role', function ($query) {
-            $query->where('name', 'delivery_worker');
-        })
-        ->whereDoesntHave('assignedOrders', function ($query) {
-            $query->where('status', 'not_complete');
-        })
-        ->inRandomOrder()
-        ->first();
+        $deliveryWorker = User::findAvailableDeliveryWorker();
+
     
         if (!$deliveryWorker) {
             return response()->json(['message' => 'No available delivery worker. Please try again later.'], 500);
         }
         
-        $stripe = new StripeClient(env('STRIPE_SECRET'));
+        $stripe = new \Stripe\StripeClient('sk_test_51OoXr0GpFbRloXFo1L4MXy4mw18FpStW1CZHdCJLiic5nOqAoyNLXQBnhP9wXH3pB0zxjjv4pzdI1ugYyIWI3fn300HV6v4WjC');
     
         $lineItems = [];     
         foreach ($validatedData['products'] as $item) {
@@ -80,11 +80,13 @@ class OrderController extends Controller
                 return response()->json(['error' => 'Insufficient stock for product ' . $product->product_name], 400);
             }
           
-            $discountedPrice = $this->getDiscountedPrice($product, $item['quantity']);
+            // $discountedPrice = $this->getDiscountedPrice($product, $item['quantity']);
+
+            $unitPrice = $this->getDiscountedPrice($product, 1);
           
             $product->decrement('stock_quantity', $item['quantity']);
           
-            $lineItems[] = $this->formatLineItem($product, $discountedPrice, $item['quantity']);
+            $lineItems[] = $this->formatLineItem($product, $unitPrice, $item['quantity']);
         }
     
         try {
@@ -94,19 +96,47 @@ class OrderController extends Controller
                 'line_items' => $lineItems,
                 'mode' => 'payment',
                 'success_url' => route('checkout.success', [], true) . "?session_id={CHECKOUT_SESSION_ID}",
-                'cancel_url' => route('checkout.cancel', [], true),
+                'cancel_url' => route('checkout.failed', [], true),
+                
             ]);
         } catch (\Stripe\Exception\ApiErrorException $e) {
             return response()->json(['error' => 'Stripe API error: ' . $e->getMessage()], 500);
         }
+
+        $shippingCost = ShippingZone::calculateShipping($validatedData['city'], $validatedData['country']);
+
+        $lineItems[] = [
+            'price_data' => [
+                'currency' => 'usd',
+                'product_data' => [
+                    'name' => 'Shipping',
+                    'description' => 'Shipping cost',
+                ],
+                'unit_amount' => $shippingCost * 100, // Convert to cents
+            ],
+            'quantity' => 1,
+        ];
+        $checkout_session = $stripe->checkout->sessions->create([
+            'payment_method_types' => ['card'],
+            'line_items' => $lineItems,
+            'mode' => 'payment',
+            'success_url' => route('checkout.success', [], true) . "?session_id={CHECKOUT_SESSION_ID}",
+            'cancel_url' => route('checkout.failed', [], true),
+        ]);
     
         DB::beginTransaction();
         try {
             $order = Order::create([
-                'customer_name' => $validatedData['customer_name'],
+                'first_name' => $validatedData['first_name'],
+                'last_name' => $validatedData['last_name'],
+                'email' => $validatedData['email'],
+                'phone' => $validatedData['phone'],
                 'customer_id' => $validatedData['customer_id'],
                 'delivery_worker_id' => $deliveryWorker->id,
                 'session_id' => $checkout_session->id,
+                'shipping_cost' => $shippingCost,
+                'latitude'=>$request->latitude
+                , 'longitude'=>$request->longitude
             ]);
     
             foreach ($validatedData['products'] as $item) {
@@ -134,19 +164,18 @@ class OrderController extends Controller
             foreach ($admins as $admin) {
                 $notification = new \MBarlow\Megaphone\Types\Important(
                     'New Order Placed',
-                    'A new order has been placed by ' . $validatedData['customer_name'] . '.',
-                    'https://example.com/order-details', // Optional: URL
-                    'View Order Details' // Optional: Link Text
+                    'A new order has been placed by ' . $validatedData['first_name'] .$validatedData['last_name']. '.',
+                    'http://127.0.0.1:8000/orders/'. $order->id,
                 );
                 $admin->notify($notification);
             }
     
-            $qrCodeData = "order/{$order->id}/customer/{$order->customer_name}/date/{$order->created_at}";
-        $qrCode = QrCode::size(300)->generate($qrCodeData);
-        $qrCodeBase64 = base64_encode($qrCode);
+            $qrCodeData = "order/{$order->id}/customer/{$order->first_name} {$order->last_name} /date/{$order->created_at}";
+            $qrCode = QrCode::size(300)->generate($qrCodeData);
+            $qrCodeBase64 = base64_encode($qrCode);
             // Send the email
-            Mail::to('ismailbouaichi10@gmail.com')->send(new OrderSuccessEmail([
-                'name' => $validatedData['customer_name'],
+            Mail::to($validatedData['email'])->send(new OrderSuccessEmail([
+                'name' => $validatedData['first_name'],
                 'qrCode' => $qrCodeBase64
             ]));
     
@@ -180,8 +209,10 @@ class OrderController extends Controller
     
     
     
-            private function formatLineItem($product, $totalPrice, $quantity) {
-            $totalPriceInCents = $totalPrice * 100; 
+     private function formatLineItem($product, $unitPrice, $quantity)
+     
+     {
+        $unitPriceInCents = $unitPrice * 100;
             return [
                 'price_data' => [
                 'currency' => 'usd',
@@ -189,18 +220,31 @@ class OrderController extends Controller
                     'name' => $product->product_name,
                     'description' => $product->description,
                 ],
-                'unit_amount' => $totalPriceInCents, 
+                'unit_amount' => $unitPriceInCents, 
                 ],
                 'quantity' => $quantity,
             ];
+         }
+
+    public function calculateShipping(Request $request)
+            {
+                $validatedData = $request->validate([
+                    'city' => 'required',
+                    'country' => 'required',
+                ]);
+
+                $shippingCost = ShippingZone::calculateShipping($validatedData['city'], $validatedData['country']);
+
+                return response()->json(['shippingCost' => $shippingCost]);
             }
-    
+                
     public function success(Request $request)
     {
         
         try {
             $sessionId = $request->query('session_id');
-            $stripe = new \Stripe\StripeClient(env('STRIPE_SECRET'));  
+            $stripe = new \Stripe\StripeClient('sk_test_51OoXr0GpFbRloXFo1L4MXy4mw18FpStW1CZHdCJLiic5nOqAoyNLXQBnhP9wXH3pB0zxjjv4pzdI1ugYyIWI3fn300HV6v4WjC');
+ 
             $session = $stripe->checkout->sessions->retrieve($sessionId);
             $order = Order::where('session_id', $sessionId)->first();
             if (!$session || !$order) {
@@ -231,8 +275,13 @@ class OrderController extends Controller
         return response()->json(['qrCodeBase64' => $qrCodeBase64, 'order' => $order], 200);
     }
 
+
+    public function failed()  {
+
+        return redirect('http://localhost:3000/failed');
+    }
     
-    public function cancel(Request $request)
+       public function cancel(Request $request)
     {
         $validatedData = $request->validate([
             'order_id' => 'required|exists:orders,id',
@@ -275,7 +324,7 @@ class OrderController extends Controller
     public function webhook()
     {
         
-        $endpoint_secret = env('STRIPE_WEBHOOK_SECRET');
+        $endpoint_secret = 'whsec_5270383984d1ba5c82a0ecf0094ed586e7763d93fb2f9808c1c46b6cd8536415';
 
         $payload = @file_get_contents('php://input');
         $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'];
@@ -320,9 +369,54 @@ class OrderController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Order $order)
+    public function orderHistory($userId)
     {
-        //
+        
+
+     $orders = DB::table('orders')
+     ->join('order_details', 'orders.id', '=', 'order_details.order_id')
+     ->join('products', 'order_details.product_id', '=', 'products.id')
+     ->select(
+         'orders.id as order_id',
+         'orders.status',
+         'orders.created_at as order_date',
+         'products.product_name',
+         'order_details.quantity',
+         'order_details.total_price',
+         'order_details.city',
+         'order_details.address',
+         'order_details.zip_code'
+     )
+     ->where('orders.customer_id', $userId)
+     ->get();
+
+ $groupedOrders = $orders->groupBy('order_id')->map(function ($order) {
+     $firstItem = $order->first();
+     return [
+         'order_id' => $firstItem->order_id,
+         'status' => $firstItem->status,
+         'order_date' => $firstItem->order_date,
+         'products' => $order->map(function ($item) {
+             return [
+                 'name' => $item->product_name,
+                 'quantity' => $item->quantity,
+                 'total' => $item->total_price
+             ];
+         }),
+         'subtotal' => $order->sum('total_price'),
+         'shipping' => 17.00, // You might want to make this dynamic
+         'total' => $order->sum('total_price'),
+         'shipping_address' => [
+             'city' => $firstItem->city,
+             'address' => $firstItem->address,
+             'zip_code' => $firstItem->zip_code
+         ],
+         'note' => 'new order' // You might want to store this in the database
+     ];
+ })->values();
+
+ return response()->json($groupedOrders);
+
     }
 
     /**
