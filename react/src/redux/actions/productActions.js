@@ -31,7 +31,8 @@ export const fetchProducts = (
         sort,
         selectedCategories: JSON.stringify(selectedCategories),
         selectedBrands: JSON.stringify(selectedBrands),
-        priceRange: JSON.stringify(priceRange),
+        min_price: priceRange.min,
+        max_price: priceRange.max,
         searchKey,
       },
     });
@@ -40,7 +41,6 @@ export const fetchProducts = (
     dispatch({ type: FETCH_PRODUCTS_FAILURE, payload: error.message });
   }
 };
-
 
 
 

@@ -1,13 +1,22 @@
-import  { useState } from 'react';
-import {  useSelector } from 'react-redux';
-
+import { useState } from 'react';
+import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
+import Slider from 'rc-slider';
+import 'rc-slider/assets/index.css';
+import { AiOutlineClose } from 'react-icons/ai';
 
-import { selectCategories, selectLoading as selectCategoriesLoading, selectError as selectCategoriesError } from '../../redux/selectors/categorySelectors';
-import { selectBrands, selectLoading as selectBrandsLoading, selectError as selectBrandsError } from '../../redux/selectors/brandSelectors';
-const Sidebar = ({ onFilterChange, selectedCategories,selectedBrands}) => {
+import {
+  selectCategories,
+  selectLoading as selectCategoriesLoading,
+  selectError as selectCategoriesError,
+} from '../../redux/selectors/categorySelectors';
+import {
+  selectBrands,
+  selectLoading as selectBrandsLoading,
+  selectError as selectBrandsError,
+} from '../../redux/selectors/brandSelectors';
 
-  
+const Sidebar = ({ onFilterChange, selectedCategories, selectedBrands, priceRange }) => {
   const categories = useSelector(selectCategories) || [];
   const categoriesLoading = useSelector(selectCategoriesLoading);
   const categoriesError = useSelector(selectCategoriesError);
@@ -15,21 +24,10 @@ const Sidebar = ({ onFilterChange, selectedCategories,selectedBrands}) => {
   const brands = useSelector(selectBrands) || [];
   const brandsLoading = useSelector(selectBrandsLoading);
   const brandsError = useSelector(selectBrandsError);
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
 
+  const [localPriceRange, setLocalPriceRange] = useState([priceRange.min, priceRange.max]);
 
  
-
-
-
-  const handlePriceChange = (event) => {
-    const { name, value } = event.target;
-    const newPriceRange = { ...priceRange, [name]: Number(value) };
-    setPriceRange(newPriceRange);
-    onFilterChange({ selectedCategories, selectedBrands, priceRange: newPriceRange });
-  };
-
-
   const handleCheckboxChange = (event, type, keyword) => {
     const { checked } = event.target;
 
@@ -43,29 +41,84 @@ const Sidebar = ({ onFilterChange, selectedCategories,selectedBrands}) => {
 
     if (type === 'category') {
       const newSelectedCategories = updateState(selectedCategories);
-      onFilterChange({ selectedCategories: newSelectedCategories, selectedBrands });
+      onFilterChange({ selectedCategories: newSelectedCategories, selectedBrands, priceRange });
     } else if (type === 'brand') {
       const newSelectedBrands = updateState(selectedBrands);
-      onFilterChange({ selectedCategories, selectedBrands: newSelectedBrands });
+      onFilterChange({ selectedCategories, selectedBrands: newSelectedBrands, priceRange });
+    }
+  };
+
+  const handleKeywordRemove = (type, keyword) => {
+    if (type === 'category') {
+      const newSelectedCategories = selectedCategories.filter((item) => item !== keyword);
+      onFilterChange({ selectedCategories: newSelectedCategories, selectedBrands, priceRange });
+    } else if (type === 'brand') {
+      const newSelectedBrands = selectedBrands.filter((item) => item !== keyword);
+      onFilterChange({ selectedCategories, selectedBrands: newSelectedBrands, priceRange });
     }
   };
 
   const renderKeywords = () => {
-    const allKeywords = [...selectedCategories,];
-    return allKeywords.map((keyword, index) => (
-      <span key={index} className="bg-gray-200 px-2 py-1 rounded-full mr-2">{keyword}</span>
+    const categoryKeywords = selectedCategories.map((keyword) => (
+      <span key={`category-${keyword}`} className="bg-gray-200 px-2 py-1 rounded-full mr-2 mb-2 flex items-center">
+        {keyword}
+        <button
+          className="ml-1 text-gray-500 hover:text-gray-700"
+          onClick={() => handleKeywordRemove('category', keyword)}
+        >
+          <AiOutlineClose size={12} />
+        </button>
+      </span>
     ));
+
+    const brandKeywords = selectedBrands.map((keyword) => (
+      <span key={`brand-${keyword}`} className="bg-gray-200 px-2 py-1 rounded-full mr-2 mb-2 flex items-center">
+        {keyword}
+        <button
+          className="ml-1 text-gray-500 hover:text-gray-700"
+          onClick={() => handleKeywordRemove('brand', keyword)}
+        >
+          <AiOutlineClose size={12} />
+        </button>
+      </span>
+    ));
+
+    return [...categoryKeywords, ...brandKeywords];
+  };
+
+  const handlePriceChange = (newRange) => {
+    setLocalPriceRange(newRange);
+    // Do not call onFilterChange here
+  };
+
+  const handlePriceAfterChange = (newRange) => {
+    onFilterChange({
+      selectedCategories,
+      selectedBrands,
+      priceRange: { min: newRange[0], max: newRange[1] },
+    });
   };
 
   return (
     <div className="w-1/4 p-4">
+      {/* Selected Filters */}
+      {(selectedCategories.length > 0 || selectedBrands.length > 0) && (
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold mb-2">Selected Filters</h3>
+          <div className="flex flex-wrap">
+            {renderKeywords()}
+          </div>
+        </div>
+      )}
+
+      {/* Categories */}
       <h2 className="text-xl font-bold mb-4">Categories</h2>
       {categoriesLoading && <p>Loading...</p>}
       {categoriesError && <p className="text-red-500">Error: {categoriesError}</p>}
       <ul>
         {categories.map((category) => (
           <li key={category.id} className="mb-2">
-            <label>
+            <label className="flex items-center">
               <input
                 type="checkbox"
                 checked={selectedCategories.includes(category.name)}
@@ -78,13 +131,14 @@ const Sidebar = ({ onFilterChange, selectedCategories,selectedBrands}) => {
         ))}
       </ul>
 
+      {/* Brands */}
       <h2 className="text-xl font-bold mb-4">Brands</h2>
       {brandsLoading && <p>Loading...</p>}
       {brandsError && <p className="text-red-500">Error: {brandsError}</p>}
       <ul>
         {brands.map((brand) => (
           <li key={brand.id} className="mb-2">
-            <label>
+            <label className="flex items-center">
               <input
                 type="checkbox"
                 checked={selectedBrands.includes(brand.name)}
@@ -96,36 +150,24 @@ const Sidebar = ({ onFilterChange, selectedCategories,selectedBrands}) => {
           </li>
         ))}
       </ul>
-      <div>
-        <h2 className="font-bold mb-2">Price</h2>
-        <input
-          type="range"
-          name="min"
-          value={priceRange.min}
-          min="0"
-          max="1000"
-          onChange={handlePriceChange}
-          className="w-full accent-black"
-        />
-        <input
-          type="range"
-          name="max"
-          value={priceRange.max}
-          min="0"
-          max="1000"
-          onChange={handlePriceChange}
-          className="w-full accent-black"
-        />
-        <div>
-          <span>Min: ${priceRange.min}</span>
-          <span>Max: ${priceRange.max}</span>
-        </div>
-      </div>
 
+      {/* Price Range */}
       <div className="mt-4">
-        <h3 className="text-lg font-semibold mb-2">Selected Filters</h3>
-        <div className="flex flex-wrap">
-          {renderKeywords()}
+        <h2 className="font-bold mb-2">Price</h2>
+        <Slider
+          range
+          min={0}
+          max={1000}
+          defaultValue={[priceRange.min, priceRange.max]}
+          value={localPriceRange}
+          onChange={handlePriceChange}
+          onAfterChange={handlePriceAfterChange}
+          trackStyle={[{ backgroundColor: 'black' }]}
+          handleStyle={[{ borderColor: 'black' }, { borderColor: 'black' }]}
+        />
+        <div className="flex justify-between mt-2">
+          <span>Min: {localPriceRange[0]} MAD</span>
+          <span>Max: {localPriceRange[1]} MAD</span>
         </div>
       </div>
     </div>
@@ -141,6 +183,5 @@ Sidebar.propTypes = {
     max: PropTypes.number.isRequired,
   }).isRequired,
 };
-
 
 export default Sidebar;

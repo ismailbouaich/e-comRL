@@ -34,6 +34,7 @@
     "lodash": "^4.17.21",
     "lucide-react": "^0.407.0",
     "qrcode.react": "^3.1.0",
+    "rc-slider": "^11.1.7",
     "react": "^18.2.0",
     "react-bingmaps": "^3.6.1",
     "react-bootstrap": "^2.10.1",

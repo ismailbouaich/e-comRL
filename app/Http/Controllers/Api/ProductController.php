@@ -22,69 +22,68 @@ class ProductController extends Controller
     public function index(Request $request)
     {
        
-            $sortOption = $request->query('sort', 'all');
-            $page = $request->query('page', 1);
-            $selectedCategories = json_decode($request->query('selectedCategories', '[]'));
-            $selectedBrands = json_decode($request->query('selectedBrands', '[]'));
-            $priceRange = json_decode($request->query('priceRange', '{"min":0,"max":1000}'), true);
-            $searchKey = $request->query('searchKey', '');
+        $sortOption = $request->query('sort', 'all');
+        $page = $request->query('page', 1);
+        $selectedCategories = json_decode($request->query('selectedCategories', '[]'));
+        $selectedBrands = json_decode($request->query('selectedBrands', '[]'));
+        $minPrice = $request->query('min_price', 0);
+        $maxPrice = $request->query('max_price', 1000);
+        $searchKey = $request->query('searchKey', '');
     
-            // Generate cache key
-            $cacheKey = "products_{$page}_{$sortOption}_" . md5(
-                implode('_', $selectedCategories) . "_" .
-                implode('_', $selectedBrands) . "_{$priceRange['min']}_{$priceRange['max']}_{$searchKey}"
-            );
+        // Generate cache key
+        $cacheKey = "products_{$page}_{$sortOption}_" . md5(
+            implode('_', $selectedCategories) . "_" .
+            implode('_', $selectedBrands) . "_{$minPrice}_{$maxPrice}_{$searchKey}"
+        );
     
-            $products = Cache::remember($cacheKey, 600, function() use (
-                $sortOption, $page, $selectedCategories, $selectedBrands, $priceRange, $searchKey
-            ) {
-                $query = Product::select('id', 'name', 'price', 'category_id', 'brand_id')
-                    ->with([
-                        'images' => function ($q) {
-                            $q->select('id', 'product_id', 'file_path')->limit(1);
-                        },
-                        'category:id,name',
-                        'brand:id,name',
-                    ]);
+        $products = Cache::remember($cacheKey, 600, function() use (
+            $sortOption, $page, $selectedCategories, $selectedBrands, $minPrice, $maxPrice, $searchKey
+        ) {
+            $query = Product::select('id', 'name', 'price', 'category_id', 'brand_id')
+                ->with([
+                    'images' => function ($q) {
+                        $q->select('id', 'product_id', 'file_path')->limit(1);
+                    },
+                    'category:id,name',
+                    'brand:id,name',
+                ]);
     
-                // Apply filters
-                if (!empty($selectedCategories)) {
-                    $query->whereHas('category', function($q) use ($selectedCategories) {
-                        $q->whereIn('name', $selectedCategories);
-                    });
-                }
+            // Apply filters
+            if (!empty($selectedCategories)) {
+                $query->whereHas('category', function($q) use ($selectedCategories) {
+                    $q->whereIn('name', $selectedCategories);
+                });
+            }
     
-                if (!empty($selectedBrands)) {
-                    $query->whereHas('brand', function($q) use ($selectedBrands) {
-                        $q->whereIn('name', $selectedBrands);
-                    });
-                }
+            if (!empty($selectedBrands)) {
+                $query->whereHas('brand', function($q) use ($selectedBrands) {
+                    $q->whereIn('name', $selectedBrands);
+                });
+            }
     
-                if ($priceRange) {
-                    $query->whereBetween('price', [$priceRange['min'], $priceRange['max']]);
-                }
+            $query->whereBetween('price', [$minPrice, $maxPrice]);
     
-                if (!empty($searchKey)) {
-                    $query->where('name', 'like', '%' . $searchKey . '%');
-                }
+            if (!empty($searchKey)) {
+                $query->where('name', 'like', '%' . $searchKey . '%');
+            }
     
-                // Apply sorting
-                switch ($sortOption) {
-                    case 'price_asc':
-                        $query->orderBy('price', 'asc');
-                        break;
-                    case 'price_desc':
-                        $query->orderBy('price', 'desc');
-                        break;
-                    case 'new':
-                        $query->orderBy('created_at', 'desc');
-                        break;
-                    default:
-                        break;
-                }
+            // Apply sorting
+            switch ($sortOption) {
+                case 'price_asc':
+                    $query->orderBy('price', 'asc');
+                    break;
+                case 'price_desc':
+                    $query->orderBy('price', 'desc');
+                    break;
+                case 'new':
+                    $query->orderBy('created_at', 'desc');
+                    break;
+                default:
+                    break;
+            }
     
-                return $query->paginate(9, ['*'], 'page', $page);
-            });
+            return $query->paginate(9, ['*'], 'page', $page);
+        });
     
             // Transform products to include discount information
             $products->getCollection()->transform(function ($product) {
