@@ -115,20 +115,36 @@ class ProductController extends Controller
     
     public function category()
     {
-        $category = Category::has('products')->get();
-        return response()->json($category);
+        $categories = Cache::remember('categories_with_products', 600, function() {
+            return Category::has('products')
+                ->select('id', 'name')
+                ->get();
+        });
+    
+        return response()->json($categories);
     }
 
     public function brand()
     {
-        $brand = Brand::has('products')->get();
-        return response()->json($brand);
+        $brands = Cache::remember('brands_with_products', 600, function() {
+            return Brand::has('products')
+                ->select('id', 'name','logo_path')
+                ->get();
+        });
+    
+        return response()->json($brands);
     }
 
     public function bestSellingProduct()
     {
         try {
-            $bestsellingPrd = OrderDetail::bestSellingProduct();
+            $bestsellingPrd = Cache::remember('best_selling_products', 600, function() {
+                return Product::with(['images:id,product_id,file_path', 'category:id,name', 'discounts'])
+                    ->withSum('orderDetails', 'quantity')
+                    ->orderBy('order_details_sum_quantity', 'desc')
+                    ->take(10) // Limit to top 10 products
+                    ->get(['id', 'name', 'price', 'category_id', 'brand_id']);
+            });
 
             $bestsellingPrd->transform(function ($product) {
                 $productDiscount = $product->currentDiscount();
@@ -155,32 +171,31 @@ class ProductController extends Controller
         }
     }
 
-    public function priceAscending()
+    // public function priceAscending(Request $request)
+    // {
+    //     $products = Product::with(['images:id,product_id,file_path', 'category:id,name', 'brand:id,name'])
+    //                         ->orderBy('price', 'asc')
+    //                         ->paginate(20); // 20 products per page
+    
+    //     return response()->json($products);
+    // }
+    
+    // public function priceDescending(Request $request)
+    // {
+    //     $products = Product::with(['images:id,product_id,file_path', 'category:id,name', 'brand:id,name'])
+    //                         ->orderBy('price', 'desc')
+    //                         ->paginate(20); // 20 products per page
+    
+    //     return response()->json($products);
+    // }
+
+    public function selectProductBestRating(Request $request)
     {
-        // Assuming priceAscending and priceDescending should return products sorted by price
-        $products = Product::with(['images', 'category', 'brand'])
-                            ->orderBy('price', 'asc')
-                            ->get();
-
-        return response()->json($products);
-    }
-
-    public function priceDescending()
-    {
-        $products = Product::with(['images', 'category', 'brand'])
-                            ->orderBy('price', 'desc')
-                            ->get();
-
-        return response()->json($products);
-    }
-
-    public function selectProductBestRating()
-    {
-        $products = Product::with(['images', 'category', 'brand'])
-                            ->withAvgRating()
-                            ->orderByDesc('avg_rating')
-                            ->get();
-
+        $products = Product::with(['images:id,product_id,file_path', 'category:id,name', 'brand:id,name'])
+                            ->withAvg('ratings', 'rating') // Assuming 'ratings' relationship
+                            ->orderByDesc('ratings_avg_rating')
+                            ->paginate(20);
+    
         return response()->json($products);
     }
 

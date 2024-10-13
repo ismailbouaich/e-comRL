@@ -77,7 +77,6 @@ Route::post('/user/validate-password', [UserController::class, 'validatePassword
 
 
 
-
 //order Routes
 Route::post('/order/create', [OrderController::class, 'store']);
 Route::get('/success', [OrderController::class, 'success'])->name('checkout.success');
