@@ -13,7 +13,7 @@ class Product extends Model
     use HasFactory;
 
     protected $table = 'products'; // Name of the product table
-    protected $fillable = ['product_name', 'description', 'price', 'stock_quantity','brand_id','category_id'];
+    protected $fillable = ['name', 'description', 'price', 'stock_quantity','brand_id','category_id'];
   
 
     public function images()
@@ -31,14 +31,18 @@ class Product extends Model
 
 
     public function scopeSearch($query, $value) {
-        $query->where('product_name', 'like', "%{$value}%")
-              ->orWhereHas('category', function($query) use ($value) {
-                  $query->where('name', 'like', "%{$value}%");
-              })
-              ->orWhereHas('brand', function($query) use ($value) {
-                $query->where('name', 'like', "%{$value}%");
-            })
-              ->orWhere('price', 'like', "%{$value}%");
+        $query->with(['category', 'brand'])
+          ->where('name', 'like', "%{$value}%")
+          ->orWhere('price', 'like', "%{$value}%");
+
+    // After eager loading, apply search filter on category and brand name
+    $query->orWhereHas('category', function($query) use ($value) {
+        $query->where('name', 'like', "%{$value}%");
+    });
+
+    $query->orWhereHas('brand', function($query) use ($value) {
+        $query->where('name', 'like', "%{$value}%");
+    });
     }
     public function orderDetails()
     {
@@ -57,8 +61,28 @@ class Product extends Model
  
    
 
-    //i added this part
    
+    protected $appends = ['discounted_price', 'is_discounted'];
+
+    public function getDiscountedPriceAttribute()
+    {
+        $currentDiscount = $this->currentDiscount();
+    
+        if ($currentDiscount) {
+            if ($currentDiscount->discount_type === 'percentage') {
+                return $this->price * (1 - $currentDiscount->discount_value / 100);
+            } else {
+                return $this->price - $currentDiscount->discount_value;
+            }
+        }
+    
+        return $this->price;
+    }
+    
+    public function getIsDiscountedAttribute()
+    {
+        return $this->currentDiscount() ? true : false;
+    }
 
      public function favorites(): BelongsToMany
     {

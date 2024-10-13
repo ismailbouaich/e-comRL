@@ -7,8 +7,10 @@ import { AuthProvider } from './component/auth/AuthProvider';
 
 
 
+
 const App = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   return (
     <div>
@@ -16,7 +18,9 @@ const App = () => {
       <Header openAuthModal={() => setIsAuthModalOpen(true)} />
       <AuthModal
         isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
+        onClose={() => setIsAuthModalOpen(false) 
+
+        } 
         onAuthSuccess={() => {
           setIsAuthModalOpen(false);
           // Update any other necessary state or fetch user data
@@ -24,6 +28,7 @@ const App = () => {
         isProtectedRoute={false}
       />
       <Outlet />
+      
       <Footer />
       </AuthProvider>
     </div>

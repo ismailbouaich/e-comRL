@@ -3,9 +3,6 @@ import {
   FETCH_PRODUCTS_REQUEST,
   FETCH_PRODUCTS_SUCCESS,
   FETCH_PRODUCTS_FAILURE,
-  SEARCH_PRODUCTS_REQUEST,
-  SEARCH_PRODUCTS_SUCCESS,
-  SEARCH_PRODUCTS_FAILURE,
   SET_FAVORITE_PRODUCT_REQUEST,
   SET_FAVORITE_PRODUCT_SUCCESS,
   SET_FAVORITE_PRODUCT_FAILURE,
@@ -18,7 +15,14 @@ import {
   FETCH_PRODUCT_FAILURE,
 } from '../constants/productConstants';
 
-export const fetchProducts = (page = 1, sort = 'all', selectedCategories = [], selectedBrands = [], priceRange = { min: 0, max: 1000 }) => async (dispatch) => {
+export const fetchProducts = (
+  page = 1,
+  sort = 'all',
+  selectedCategories = [],
+  selectedBrands = [],
+  priceRange = { min: 0, max: 1000 },
+  searchKey = ''
+) => async (dispatch) => {
   dispatch({ type: FETCH_PRODUCTS_REQUEST });
   try {
     const response = await axios.get(`/product/list`, {
@@ -28,24 +32,16 @@ export const fetchProducts = (page = 1, sort = 'all', selectedCategories = [], s
         selectedCategories: JSON.stringify(selectedCategories),
         selectedBrands: JSON.stringify(selectedBrands),
         priceRange: JSON.stringify(priceRange),
+        searchKey,
       },
     });
     dispatch({ type: FETCH_PRODUCTS_SUCCESS, payload: response.data });
-    return response.data; // Return the data
   } catch (error) {
     dispatch({ type: FETCH_PRODUCTS_FAILURE, payload: error.message });
-    throw error; // Re-throw the error
   }
 };
-export const searchProducts = (searchKey) => async (dispatch) => {
-  dispatch({ type: SEARCH_PRODUCTS_REQUEST });
-  try {
-    const response = await axios.get(`/search/${searchKey}`);
-    dispatch({ type: SEARCH_PRODUCTS_SUCCESS, payload: response.data });
-  } catch (error) {
-    dispatch({ type: SEARCH_PRODUCTS_FAILURE, payload: error.message });
-  }
-};
+
+
 
 
 export const setFavoriteProduct = (productId) => async (dispatch) => {

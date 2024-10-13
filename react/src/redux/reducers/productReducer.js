@@ -1,10 +1,9 @@
+// productReducer.js
+
 import {
   FETCH_PRODUCTS_REQUEST,
   FETCH_PRODUCTS_SUCCESS,
   FETCH_PRODUCTS_FAILURE,
-  SEARCH_PRODUCTS_REQUEST,
-  SEARCH_PRODUCTS_SUCCESS,
-  SEARCH_PRODUCTS_FAILURE,
   FETCH_PRODUCT_REQUEST,
   FETCH_PRODUCT_SUCCESS,
   FETCH_PRODUCT_FAILURE,
@@ -19,7 +18,6 @@ import {
 const initialState = {
   loading: false,
   products: [],
-  searchResults: [],
   product: {},
   relatedByCategory: [],
   relatedByBrand: [],
@@ -32,12 +30,12 @@ const productReducer = (state = initialState, action) => {
   switch (action.type) {
     case FETCH_PRODUCTS_REQUEST:
     case FETCH_PRODUCT_REQUEST:
-    case SEARCH_PRODUCTS_REQUEST:
     case SET_FAVORITE_PRODUCT_REQUEST:
     case FETCH_FAVORITE_PRODUCT_REQUEST:
       return {
         ...state,
         loading: true,
+        error: '', // Clear previous errors
       };
     case FETCH_PRODUCTS_SUCCESS:
       return {
@@ -47,7 +45,10 @@ const productReducer = (state = initialState, action) => {
         pagination: {
           currentPage: action.payload.current_page,
           lastPage: action.payload.last_page,
+          totalPages: action.payload.last_page,
+          totalItems: action.payload.total,
         },
+        error: '',
       };
     case FETCH_PRODUCT_SUCCESS:
       return {
@@ -58,12 +59,6 @@ const productReducer = (state = initialState, action) => {
         relatedByBrand: action.payload.relatedByBrand,
         error: '',
       };
-    case SEARCH_PRODUCTS_SUCCESS:
-      return {
-        ...state,
-        loading: false,
-        searchResults: action.payload,
-      };
     case SET_FAVORITE_PRODUCT_SUCCESS:
       return {
         ...state,
@@ -71,18 +66,19 @@ const productReducer = (state = initialState, action) => {
         favorites: state.favorites.includes(action.payload)
           ? state.favorites.filter((id) => id !== action.payload)
           : [...state.favorites, action.payload],
+        error: '',
       };
     case FETCH_FAVORITE_PRODUCT_SUCCESS:
       return {
         ...state,
         loading: false,
         favorites: action.payload,
+        error: '',
       };
     case FETCH_PRODUCTS_FAILURE:
-    case SEARCH_PRODUCTS_FAILURE:
+    case FETCH_PRODUCT_FAILURE:
     case SET_FAVORITE_PRODUCT_FAILURE:
     case FETCH_FAVORITE_PRODUCT_FAILURE:
-    case FETCH_PRODUCT_FAILURE:
       return {
         ...state,
         loading: false,

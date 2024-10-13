@@ -1,19 +1,15 @@
-import React, { useEffect,useState } from 'react'
-import UserList from '../UserList'
-import { useNavigate } from 'react-router'
 
 import Swipe from './Swipe'
 import FlashSale from './FlashSale'
 import { Hero } from './Hero'
 import Brand from './Brand'
-import { useDispatch, useSelector } from 'react-redux';
+import {  useSelector } from 'react-redux';
 
 const Home = () => {
 
  
 
 
-  const navigate=useNavigate();
   
 
   const categories = useSelector((state) => state.category.categories);

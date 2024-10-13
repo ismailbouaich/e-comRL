@@ -1,13 +1,13 @@
-import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+
 import { useNavigate } from 'react-router';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { fetchCategories } from '../../redux/actions/categoryActions';
-import { selectCategories } from '../../redux/selectors/categorySelectors';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/scrollbar';
+
+import PropTypes from 'prop-types';
+
 
 const Swipe = ({ categories }) => {
   const navigate = useNavigate();
@@ -37,5 +37,10 @@ const Swipe = ({ categories }) => {
     </Swiper>
   );
 };
+
+Swipe.propTypes={
+  categories: PropTypes.arrayOf(PropTypes.string).isRequired
+
+}
 
 export default Swipe;

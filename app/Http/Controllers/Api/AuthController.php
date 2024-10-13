@@ -17,34 +17,48 @@ use App\Http\Requests\RegisterRequest;
 class AuthController extends Controller
 {
     public function login(Request $request)
-{
-    try {
-        if (Auth::attempt($request->only('email', 'password'))) {
-            $user = Auth::user();
-
-            if ($user->hasRole('customer')) {
+    {
+        try {
+            if (Auth::attempt($request->only('email', 'password'))) {
+                $user = Auth::user();
+    
                 $token = $user->createToken('app')->accessToken;
-
-                return response([
-                    'message' => 'Successfully Login',
-                    'token' => $token,
-                    'user' => $user
-                ], 200);
-            } else {
-                return response([
-                    'message' => 'You do not have the rights to access',
-                ], 403);
+    
+                if ($user->hasRole('customer')) {
+                    return response([
+                        'message' => 'Successfully Logged In as Customer',
+                        'token' => $token,
+                        'user' => $user
+                    ], 200);
+                } elseif ($user->hasRole('admin')) {
+                    return response([
+                        'message' => 'Successfully Logged In as Admin',
+                        'token' => $token,
+                        'user' => $user
+                    ], 200);
+                }
+                elseif ($user->hasRole('delivery_worker')) {
+                    return response([
+                        'message' => 'Successfully Logged In as delivery_worker',
+                        'token' => $token,
+                        'user' => $user
+                    ], 200);
+                }
+                 else {
+                    return response([
+                        'message' => 'You do not have permission to access this application.',
+                    ], 403);
+                }
             }
+        } catch (\Exception $exception) {
+            return response(['message' => $exception->getMessage()], 500);
         }
-    } catch (\Exception $exception) {
-        return response(['message' => $exception->getMessage()], 500);
+    
+        return response([
+            'message' => 'Invalid Email or Password'
+        ], 401);
     }
-
-    return response([
-        'message' => 'Invalid Email Or Password'
-    ], 401);
-}
-
+    
 public function register(RegisterRequest $request)
 {
     try {

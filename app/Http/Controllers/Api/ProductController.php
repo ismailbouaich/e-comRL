@@ -21,18 +21,33 @@ class ProductController extends Controller
     
     public function index(Request $request)
     {
-        try {
+       
             $sortOption = $request->query('sort', 'all');
             $page = $request->query('page', 1);
             $selectedCategories = json_decode($request->query('selectedCategories', '[]'));
             $selectedBrands = json_decode($request->query('selectedBrands', '[]'));
             $priceRange = json_decode($request->query('priceRange', '{"min":0,"max":1000}'), true);
+            $searchKey = $request->query('searchKey', '');
     
-            $cacheKey = "products_{$page}_{$sortOption}_" . md5(implode('_', $selectedCategories) . "_" . implode('_', $selectedBrands) . "_{$priceRange['min']}_{$priceRange['max']}");
+            // Generate cache key
+            $cacheKey = "products_{$page}_{$sortOption}_" . md5(
+                implode('_', $selectedCategories) . "_" .
+                implode('_', $selectedBrands) . "_{$priceRange['min']}_{$priceRange['max']}_{$searchKey}"
+            );
     
-            $products = Cache::remember($cacheKey, 600, function() use ($sortOption, $page, $selectedCategories, $selectedBrands, $priceRange) {
-                $query = Product::with('images', 'category', 'discounts', 'brand');
+            $products = Cache::remember($cacheKey, 600, function() use (
+                $sortOption, $page, $selectedCategories, $selectedBrands, $priceRange, $searchKey
+            ) {
+                $query = Product::select('id', 'name', 'price', 'category_id', 'brand_id')
+                    ->with([
+                        'images' => function ($q) {
+                            $q->select('id', 'product_id', 'file_path')->limit(1);
+                        },
+                        'category:id,name',
+                        'brand:id,name',
+                    ]);
     
+                // Apply filters
                 if (!empty($selectedCategories)) {
                     $query->whereHas('category', function($q) use ($selectedCategories) {
                         $q->whereIn('name', $selectedCategories);
@@ -49,6 +64,11 @@ class ProductController extends Controller
                     $query->whereBetween('price', [$priceRange['min'], $priceRange['max']]);
                 }
     
+                if (!empty($searchKey)) {
+                    $query->where('name', 'like', '%' . $searchKey . '%');
+                }
+    
+                // Apply sorting
                 switch ($sortOption) {
                     case 'price_asc':
                         $query->orderBy('price', 'asc');
@@ -59,7 +79,6 @@ class ProductController extends Controller
                     case 'new':
                         $query->orderBy('created_at', 'desc');
                         break;
-                    case 'all':
                     default:
                         break;
                 }
@@ -67,18 +86,21 @@ class ProductController extends Controller
                 return $query->paginate(9, ['*'], 'page', $page);
             });
     
+            // Transform products to include discount information
             $products->getCollection()->transform(function ($product) {
-                $productDiscount = $product->currentDiscount();
+                // Include discount information
+                $product->discounted_price = $product->price;
+                $currentDiscount = $product->currentDiscount();
     
-                if ($productDiscount) {
-                    $product->is_discounted = true;
-                    if ($productDiscount->discount_type === 'percentage') {
-                        $product->discounted_price = $product->price * (1 - $productDiscount->discount_value / 100);
+                if ($currentDiscount) {
+                    if ($currentDiscount->discount_type === 'percentage') {
+                        $product->discounted_price = $product->price * (1 - $currentDiscount->discount_value / 100);
                     } else {
-                        $product->discounted_price = $product->price - $productDiscount->discount_value;
+                        $product->discounted_price = $product->price - $currentDiscount->discount_value;
                     }
-                    $product->discount_name = $productDiscount->name;
-                    $product->discount_code = $productDiscount->code;
+                    $product->is_discounted = true;
+                    $product->discount_name = $currentDiscount->name;
+                    $product->discount_code = $currentDiscount->code;
                 } else {
                     $product->is_discounted = false;
                 }
@@ -88,10 +110,9 @@ class ProductController extends Controller
     
             return response()->json($products);
     
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'Server Error'], 500);
-        }
+       
     }
+    
     
     public function category()
     {
@@ -219,7 +240,7 @@ public function show($id)
             return response()->json(['error' => 'Product not found'], 404);
         }
 
-        // Format the average rating to 1 decimal place
+        
         $product->avg_rating = number_format($product->avg_rating, 1);
 
         $relatedByCategory = Product::where('category_id', $product->category_id)

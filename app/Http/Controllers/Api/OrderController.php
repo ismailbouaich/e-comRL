@@ -192,7 +192,7 @@ class OrderController extends Controller
     
     public function getDiscountedPrice(Product $product, $quantity)
     {
-        $discount = $product->discounts()->current()->first();
+        $discount = $product->currentDiscount();
         $price = $product->price;
     
         if ($discount) {

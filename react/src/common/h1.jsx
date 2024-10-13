@@ -8,7 +8,7 @@ import Login from '../component/Login';
 import Register from '../component/Register';
 import Profile from '../component/profile/Profile';
 import Forgot from '../component/Forgot';
-import Store from '../component/Store';
+import Store from '../component/store/Store';
 import Product from '../component/Product';
 import Success from '../component/Success';
 import Confirmed from '../component/Confirmed';

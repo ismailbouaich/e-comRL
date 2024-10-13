@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import  { useState } from 'react';
 import {  useSelector } from 'react-redux';
-import { fetchCategories,  } from '../../redux/actions/categoryActions';
-import { fetchBrands } from '../../redux/actions/brandActions';
+
+import PropTypes from 'prop-types';
+
 import { selectCategories, selectLoading as selectCategoriesLoading, selectError as selectCategoriesError } from '../../redux/selectors/categorySelectors';
 import { selectBrands, selectLoading as selectBrandsLoading, selectError as selectBrandsError } from '../../redux/selectors/brandSelectors';
 const Sidebar = ({ onFilterChange, selectedCategories,selectedBrands}) => {
@@ -130,5 +131,16 @@ const Sidebar = ({ onFilterChange, selectedCategories,selectedBrands}) => {
     </div>
   );
 };
+
+Sidebar.propTypes = {
+  onFilterChange: PropTypes.func.isRequired,
+  selectedCategories: PropTypes.arrayOf(PropTypes.string).isRequired,
+  selectedBrands: PropTypes.arrayOf(PropTypes.string).isRequired,
+  priceRange: PropTypes.shape({
+    min: PropTypes.number.isRequired,
+    max: PropTypes.number.isRequired,
+  }).isRequired,
+};
+
 
 export default Sidebar;
