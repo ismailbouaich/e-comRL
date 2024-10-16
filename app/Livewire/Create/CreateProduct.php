@@ -13,11 +13,11 @@ class CreateProduct extends Component
 {
     use WithFileUploads;
 
-    public $product_name, $description, $price, $stock_quantity, $category_id,$brand_id;
+    public $name, $description, $price, $stock_quantity, $category_id,$brand_id;
     public $images = [];
     public $categories ,$brands;
     protected $rules = [
-        'product_name' => 'required|string|max:255',
+        'name' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric',
             'stock_quantity' => 'required|integer',
@@ -39,7 +39,7 @@ class CreateProduct extends Component
         $this->validate();
 
         $product = Product::create([
-            'product_name' => $this->product_name,
+            'name' => $this->name,
             'description' => $this->description,
             'price' => $this->price,
             'stock_quantity' => $this->stock_quantity,
@@ -57,12 +57,12 @@ class CreateProduct extends Component
         }
 
         session()->flash('message', 'Product successfully created with images.');
-        return $this->reset(['product_name', 'description', 'price', 'stock_quantity',]);
+        return $this->reset(['name', 'description', 'price', 'stock_quantity',]);
 
     }
 
     public function cancel()  {
-        return  $this->reset(['product_name', 'description', 'price', 'stock_quantity','file_path','product_id']);
+        return  $this->reset(['name', 'description', 'price', 'stock_quantity','file_path','product_id']);
   
       }
     public function mount()

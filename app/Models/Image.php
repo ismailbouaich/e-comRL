@@ -24,7 +24,7 @@ class Image extends Model
    *   </div>
  * @endif
 
- * *      <input type="text" wire:model="product_name" placeholder="Product Name">
+ * *      <input type="text" wire:model="name" placeholder="Product Name">
      * <textarea wire:model="description" placeholder="Description"></textarea>
     *  <input type="number" wire:model="price" placeholder="Price">
       *<input type="number" wire:model="stock_quantity" placeholder="Stock Quantity">

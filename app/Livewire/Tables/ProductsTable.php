@@ -44,7 +44,7 @@ class ProductsTable extends Component
     }
 
     public function setSortBy($sortByField){
-        $validSortFields = ['product_name','category.name', 'price', 'created_at']; // Example fields
+        $validSortFields = ['name','category.name', 'price', 'created_at']; // Example fields
         if (!in_array($sortByField, $validSortFields)) {
             return;
         }

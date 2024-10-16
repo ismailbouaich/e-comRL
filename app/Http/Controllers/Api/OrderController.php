@@ -77,7 +77,7 @@ class OrderController extends Controller
           
             // Check stock quantity
             if ($product->stock_quantity < $item['quantity']) {
-                return response()->json(['error' => 'Insufficient stock for product ' . $product->product_name], 400);
+                return response()->json(['error' => 'Insufficient stock for product ' . $product->name], 400);
             }
           
             // $discountedPrice = $this->getDiscountedPrice($product, $item['quantity']);
@@ -217,7 +217,7 @@ class OrderController extends Controller
                 'price_data' => [
                 'currency' => 'usd',
                 'product_data' => [
-                    'name' => $product->product_name,
+                    'name' => $product->name,
                     'description' => $product->description,
                 ],
                 'unit_amount' => $unitPriceInCents, 
@@ -380,7 +380,7 @@ class OrderController extends Controller
          'orders.id as order_id',
          'orders.status',
          'orders.created_at as order_date',
-         'products.product_name',
+         'products.name',
          'order_details.quantity',
          'order_details.total_price',
          'order_details.city',
@@ -398,7 +398,7 @@ class OrderController extends Controller
          'order_date' => $firstItem->order_date,
          'products' => $order->map(function ($item) {
              return [
-                 'name' => $item->product_name,
+                 'name' => $item->name,
                  'quantity' => $item->quantity,
                  'total' => $item->total_price
              ];

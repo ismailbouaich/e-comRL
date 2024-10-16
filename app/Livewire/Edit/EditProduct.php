@@ -16,7 +16,7 @@ class EditProduct extends Component
     use WithFileUploads;
 
     public $product;
-    public $product_name, $description, $price, $stock_quantity, $category_id;
+    public $name, $description, $price, $stock_quantity, $category_id;
     public $images = [];
     public $newImages = [];
     public $categories;
@@ -24,7 +24,7 @@ class EditProduct extends Component
     public function mount($productId){
         $product = Product::find($productId);
         $this->product = $product;
-        $this->product_name = $product->product_name;
+        $this->name = $product->name;
         $this->description = $product->description;
         $this->price = $product->price;
         $this->stock_quantity = $product->stock_quantity;
@@ -53,7 +53,7 @@ class EditProduct extends Component
     public function save()
     {
         $this->validate([
-            'product_name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'description' => 'required|string',
             'price' => 'required|numeric',
             'stock_quantity' => 'required|integer',
@@ -61,7 +61,7 @@ class EditProduct extends Component
         ]);
 
         $this->product->update([
-            'product_name' => $this->product_name,
+            'name' => $this->name,
             'description' => $this->description,
             'price' => $this->price,
             'stock_quantity' => $this->stock_quantity,

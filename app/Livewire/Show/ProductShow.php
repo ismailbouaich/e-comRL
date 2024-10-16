@@ -12,14 +12,14 @@ class ProductShow extends Component
     use WithFileUploads;
     
     public $product;
-    public $product_name, $description, $price, $stock_quantity, $category_id;
+    public $name, $description, $price, $stock_quantity, $category_id;
     public $images = [];
     public $categories;
 
     public function mount($productId){
         $product = Product::find($productId);
         $this->product = $product;
-        $this->product_name = $product->product_name;
+        $this->name = $product->name;
         $this->description = $product->description;
         $this->price = $product->price;
         $this->stock_quantity = $product->stock_quantity;

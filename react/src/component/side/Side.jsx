@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { AiOutlineClose } from 'react-icons/ai';
+import { FaChevronDown } from 'react-icons/fa';
 
 import {
   selectCategories,
@@ -16,6 +17,8 @@ import {
   selectError as selectBrandsError,
 } from '../../redux/selectors/brandSelectors';
 
+import './side.css';
+
 const Sidebar = ({ onFilterChange, selectedCategories, selectedBrands, priceRange }) => {
   const categories = useSelector(selectCategories) || [];
   const categoriesLoading = useSelector(selectCategoriesLoading);
@@ -27,7 +30,10 @@ const Sidebar = ({ onFilterChange, selectedCategories, selectedBrands, priceRang
 
   const [localPriceRange, setLocalPriceRange] = useState([priceRange.min, priceRange.max]);
 
- 
+  // Collapsed state for sections
+  const [isCategoriesCollapsed, setIsCategoriesCollapsed] = useState(false);
+  const [isBrandsCollapsed, setIsBrandsCollapsed] = useState(false);
+
   const handleCheckboxChange = (event, type, keyword) => {
     const { checked } = event.target;
 
@@ -99,6 +105,14 @@ const Sidebar = ({ onFilterChange, selectedCategories, selectedBrands, priceRang
     });
   };
 
+  const toggleCategories = () => {
+    setIsCategoriesCollapsed(!isCategoriesCollapsed);
+  };
+
+  const toggleBrands = () => {
+    setIsBrandsCollapsed(!isBrandsCollapsed);
+  };
+
   return (
     <div className="w-1/4 p-4">
       {/* Selected Filters */}
@@ -112,47 +126,75 @@ const Sidebar = ({ onFilterChange, selectedCategories, selectedBrands, priceRang
       )}
 
       {/* Categories */}
-      <h2 className="text-xl font-bold mb-4">Categories</h2>
-      {categoriesLoading && <p>Loading...</p>}
-      {categoriesError && <p className="text-red-500">Error: {categoriesError}</p>}
-      <ul>
-        {categories.map((category) => (
-          <li key={category.id} className="mb-2">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={selectedCategories.includes(category.name)}
-                onChange={(e) => handleCheckboxChange(e, 'category', category.name)}
-                className="mr-2"
-              />
-              {category.name}
-            </label>
-          </li>
-        ))}
-      </ul>
+      <button
+        onClick={toggleCategories}
+        className="flex items-center justify-between w-full text-xl font-bold mb-4 focus:outline-none"
+      >
+        Categories
+        <FaChevronDown
+          className={`ml-2 transform transition-transform ${
+            isCategoriesCollapsed ? '-rotate-90' : 'rotate-0'
+          }`}
+        />
+      </button>
+      {!isCategoriesCollapsed && (
+        <>
+          {categoriesLoading && <p>Loading...</p>}
+          {categoriesError && <p className="text-red-500">Error: {categoriesError}</p>}
+          <ul>
+            {categories.map((category) => (
+              <li key={category.id} className="mb-2">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={selectedCategories.includes(category.name)}
+                    onChange={(e) => handleCheckboxChange(e, 'category', category.name)}
+                    className="mr-2"
+                  />
+                  {category.name}
+                </label>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
 
       {/* Brands */}
-      <h2 className="text-xl font-bold mb-4">Brands</h2>
-      {brandsLoading && <p>Loading...</p>}
-      {brandsError && <p className="text-red-500">Error: {brandsError}</p>}
-      <ul>
-        {brands.map((brand) => (
-          <li key={brand.id} className="mb-2">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={selectedBrands.includes(brand.name)}
-                onChange={(e) => handleCheckboxChange(e, 'brand', brand.name)}
-                className="mr-2"
-              />
-              {brand.name}
-            </label>
-          </li>
-        ))}
-      </ul>
+      <button
+        onClick={toggleBrands}
+        className="flex items-center justify-between w-full text-xl font-bold mb-4 mt-6 focus:outline-none"
+      >
+        Brands
+        <FaChevronDown
+          className={`ml-2 transform transition-transform ${
+            isBrandsCollapsed ? '-rotate-90' : 'rotate-0'
+          }`}
+        />
+      </button>
+      {!isBrandsCollapsed && (
+        <>
+          {brandsLoading && <p>Loading...</p>}
+          {brandsError && <p className="text-red-500">Error: {brandsError}</p>}
+          <ul>
+            {brands.map((brand) => (
+              <li key={brand.id} className="mb-2">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={selectedBrands.includes(brand.name)}
+                    onChange={(e) => handleCheckboxChange(e, 'brand', brand.name)}
+                    className="mr-2"
+                  />
+                  {brand.name}
+                </label>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
 
       {/* Price Range */}
-      <div className="mt-4">
+      <div className="mt-6">
         <h2 className="font-bold mb-2">Price</h2>
         <Slider
           range

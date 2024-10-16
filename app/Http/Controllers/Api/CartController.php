@@ -75,7 +75,7 @@ class CartController extends Controller
         foreach ($validateData['cart_items'] as $item) {
             $product = Product::findOrFail($item['product_id']);
             if ($product->stock_quantity < $item['quantity']) {
-                return response()->json(['error' => 'Insufficient stock for product ' . $product->product_name], 400);
+                return response()->json(['error' => 'Insufficient stock for product ' . $product->name], 400);
             }
             $totalPrice = $product->price * $item['quantity'];
             $lineItems[] = $this->formatLineItem($product, $totalPrice, $item['quantity']);
@@ -130,7 +130,7 @@ class CartController extends Controller
             'price_data' => [
                 'currency' => 'usd',
                 'product_data' => [
-                    'name' => $product->product_name,
+                    'name' => $product->name,
                     'description' => $product->description,
                 ],
                 'unit_amount' => $totalPrice,

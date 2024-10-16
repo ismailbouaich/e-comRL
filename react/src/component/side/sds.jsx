@@ -206,7 +206,7 @@ const Store = () => {
                     src={`http://127.0.0.1:8000/storage/${
                       product.images && product.images.length > 0 && product.images[0].file_path
                     }`}
-                    alt={product.product_name}
+                    alt={product.name}
                     className="w-full h-48 object-cover rounded-lg"
                   />
                 </div>
@@ -229,7 +229,7 @@ const Store = () => {
                     )}
                   </button>
                 </div>
-                <h2 className="text-lg font-bold mb-2">{product.product_name}</h2>
+                <h2 className="text-lg font-bold mb-2">{product.name}</h2>
                 <p className="text-gray-700 mb-2">${product.price}</p>
                 <p className="text-gray-500 mb-4">
                   {product.category && product.category.name}, {product.brand && product.brand.name}
@@ -240,7 +240,7 @@ const Store = () => {
                       addToCart(
                         product.id,
                         1,
-                        product.product_name,
+                        product.name,
                         product.images && product.images.length > 0 ? `http://127.0.0.1:8000/storage/${product.images[0].file_path}` : '',
                         product.price
                       )

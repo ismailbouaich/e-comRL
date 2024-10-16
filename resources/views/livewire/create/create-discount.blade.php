@@ -78,7 +78,7 @@
                 <div class="w-2/3">
                     <select wire:model="product_ids" id="product_ids" name="product_ids[]" multiple class="w-full px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                         @foreach ($products as $product)
-                            <option value="{{ $product->id }}">{{ $product->product_name }}</option>
+                            <option value="{{ $product->id }}">{{ $product->name }}</option>
                         @endforeach
                     </select>
                     @error('product_ids')

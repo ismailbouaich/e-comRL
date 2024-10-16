@@ -40,13 +40,13 @@ const FlashSale = () => {
             <Link className='flex relative ltr:rounded-l-md rtl:rounded-r-md  mb-3 md:mb-3.5 pb-0 aspect-square w-full rounded-md overflow-hidden'  to={`/product/${item.id}`}
                     state={{ user }}>
                 <img src={`http://127.0.0.1:8000/storage/${(item.images && item.images.length > 0 && item.images[0].file_path)}`}
-                  alt={item.product_name} className='bg-gray-300 object-cover transition duration-150 ease-linear transform group-hover:scale-105' style={{
+                  alt={item.name} className='bg-gray-300 object-cover transition duration-150 ease-linear transform group-hover:scale-105' style={{
                     position:'absolute',height:'100%',width:'100%',left:'0',top:'0',right:'0',bottom:'0',color:'transparent'
                 }} sizes="(max-width: 768px) 100vw"/>
             </Link>
             <div className="w-full overflow-hidden ltr:pl-0 rtl:pr-0">
                 <h2 className="text-heading font-semibold truncate mb-1 md:mb-1.5 text-sm sm:text-base md:text-sm lg:text-base xl:text-lg">
-                {item.product_name}
+                {item.name}
                 </h2>
                 <div className="text-heading font-semibold text-sm sm:text-base mt-1.5 space-x-1 rtl:space-x-reverse md:text-base 3xl:text-xl md:mt-2.5 2xl:mt-3">
                     <span className="inline-block">

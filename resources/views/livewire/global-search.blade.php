@@ -16,7 +16,7 @@
                             @foreach ($items as $item)
                                 <li class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <a href="{{ route($type . '.show', $item->id) }}">
-                                        {{ $item->name ?? $item->customer_name ?? $item->product_name ?? ''?? $item->city ?? '' }}
+                                        {{ $item->name ?? $item->customer_name ?? $item->name ?? ''?? $item->city ?? '' }}
                                     </a>
                                 </li>
                             @endforeach

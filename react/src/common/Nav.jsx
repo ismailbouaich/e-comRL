@@ -17,17 +17,36 @@ const useDropdown = (initialState = false) => {
   }, []);
 
   const close = useCallback(() => {
-    timeoutRef.current = setTimeout(() => setIsOpen(false), 100);
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      setIsOpen(false);
+      timeoutRef.current = null;
+    }, 100); // Delay in milliseconds
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, []);
 
   return [isOpen, open, close];
 };
 
-const DropdownMenu = React.memo(({ items }) => (
-  <div className="absolute top-full mt-2 w-40 bg-white border rounded shadow-lg">
+const DropdownMenu = React.memo(({ items, openDropdown, closeDropdown }) => (
+  <div
+    className="absolute top-full mt-2 w-40 bg-white border rounded shadow-lg"
+    onMouseEnter={openDropdown}
+    onMouseLeave={closeDropdown}
+  >
     <ul>
       {items.map((item, index) => (
-        <li key={index} className="px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-800">
+        <li
+          key={index}
+          className="px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-gray-800"
+        >
           {item}
         </li>
       ))}
@@ -115,7 +134,7 @@ const Nav = ({ openAuthModal }) => {
   return (
     <header className="sticky top-0 w-full z-50 bg-white shadow-md" ref={navRef}>
       <nav className="bg-white shadow-md">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 py-0 max-650:py-4 flex items-center justify-between">
           <Link to={ROUTES.HOME} className="text-2xl font-bold">Ismail Bouaichi</Link>
 
           <div className="hidden lg:flex space-x-6">
@@ -248,127 +267,127 @@ const Nav = ({ openAuthModal }) => {
           </div>
           <div>
           <ul>
-  {links.map((link, index) => (
-    <li key={index} className="mb-1">
-      <Link
-        to={link.path}
-        className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded"
-        onClick={toggleMenu}
-      >
-        {link.name}
-      </Link>
-    </li>
-  ))}
+            {links.map((link, index) => (
+              <li key={index} className="mb-1">
+                <Link
+                  to={link.path}
+                  className="block p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded"
+                  onClick={toggleMenu}
+                >
+                  {link.name}
+                </Link>
+              </li>
+            ))}
 
-  {/* Men Wear Dropdown */}
-  <li className="mb-2">
-  <button
-      onClick={() => toggleMobileDropdown('men')}
-      className="flex items-center justify-between w-full p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded"
-    >
-      <span>{t('Men Wear')}</span>
-      <FaChevronDown
-        className={`ml-2 transform transition-transform ${
-          isMobileDropdownOpen.men ? 'rotate-180' : ''
-        }`}
-      />
-    </button>
-    {isMobileDropdownOpen.men && (
-      <ul className="mt-2">
-        {[
-          { name: t('T-Shirt'), path: '/category/men/t-shirts' },
-          { name: t('Casual Shirts'), path: '/category/men/casual-shirts' },
-          { name: t('Formal Shirts'), path: '/category/men/formal-shirts' },
-          { name: t('Blazers & Coats'), path: '/category/men/blazers-coats' },
-          { name: t('Suits'), path: '/category/men/suits' },
-          { name: t('Jackets'), path: '/category/men/jackets' },
-        ].map((item, index) => (
-          <li key={index} className="mb-1">
-            <Link
-              to={item.path}
-              className="block pl-8 p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded"
-              onClick={toggleMenu}
-            >
-              {item.name}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    )}
-  </li>
+        {/* Men Wear Dropdown */}
+        <li className="mb-2">
+        <button
+            onClick={() => toggleMobileDropdown('men')}
+            className="flex items-center justify-between w-full p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded"
+          >
+            <span>{t('Men Wear')}</span>
+            <FaChevronDown
+              className={`ml-2 transform transition-transform ${
+                isMobileDropdownOpen.men ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
+          {isMobileDropdownOpen.men && (
+            <ul className="mt-2">
+              {[
+                { name: t('T-Shirt'), path: '/category/men/t-shirts' },
+                { name: t('Casual Shirts'), path: '/category/men/casual-shirts' },
+                { name: t('Formal Shirts'), path: '/category/men/formal-shirts' },
+                { name: t('Blazers & Coats'), path: '/category/men/blazers-coats' },
+                { name: t('Suits'), path: '/category/men/suits' },
+                { name: t('Jackets'), path: '/category/men/jackets' },
+              ].map((item, index) => (
+                <li key={index} className="mb-1">
+                  <Link
+                    to={item.path}
+                    className="block pl-8 p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded"
+                    onClick={toggleMenu}
+                  >
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </li>
 
-  {/* Women Wear Dropdown */}
-  <li className="mb-2">
-  <button
-      onClick={() => toggleMobileDropdown('women')}
-      className="flex items-center justify-between w-full p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded"
-    >
-      <span>{t('Women Wear')}</span>
-      <FaChevronDown
-        className={`ml-2 transform transition-transform ${
-          isMobileDropdownOpen.women ? 'rotate-180' : ''
-        }`}
-      />
-    </button>
-   
-    {isMobileDropdownOpen.women && (
-      <ul className="mt-2">
-        {[
-          { name: t('Dresses'), path: '/category/women/dresses' },
-          { name: t('Jumpsuits'), path: '/category/women/jumpsuits' },
-          { name: t('Tops, T-Shirts & Shirts'), path: '/category/women/tops-tshirts-shirts' },
-          { name: t('Shorts & Skirts'), path: '/category/women/shorts-skirts' },
-          { name: t('Shrugs'), path: '/category/women/shrugs' },
-          { name: t('Blazers'), path: '/category/women/blazers' },
-        ].map((item, index) => (
-          <li key={index} className="mb-1">
-            <Link
-              to={item.path}
-              className="block pl-8 p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded"
-              onClick={toggleMenu}
+          {/* Women Wear Dropdown */}
+          <li className="mb-2">
+          <button
+              onClick={() => toggleMobileDropdown('women')}
+              className="flex items-center justify-between w-full p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded"
             >
-              {item.name}
-            </Link>
+              <span>{t('Women Wear')}</span>
+              <FaChevronDown
+                className={`ml-2 transform transition-transform ${
+                  isMobileDropdownOpen.women ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+          
+            {isMobileDropdownOpen.women && (
+              <ul className="mt-2">
+                {[
+                  { name: t('Dresses'), path: '/category/women/dresses' },
+                  { name: t('Jumpsuits'), path: '/category/women/jumpsuits' },
+                  { name: t('Tops, T-Shirts & Shirts'), path: '/category/women/tops-tshirts-shirts' },
+                  { name: t('Shorts & Skirts'), path: '/category/women/shorts-skirts' },
+                  { name: t('Shrugs'), path: '/category/women/shrugs' },
+                  { name: t('Blazers'), path: '/category/women/blazers' },
+                ].map((item, index) => (
+                  <li key={index} className="mb-1">
+                    <Link
+                      to={item.path}
+                      className="block pl-8 p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded"
+                      onClick={toggleMenu}
+                    >
+                      {item.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </li>
-        ))}
-      </ul>
-    )}
-  </li>
 
   {/* Pages Dropdown */}
-  <li className="mb-2">
-  <button
-      onClick={() => toggleMobileDropdown('pages')}
-      className="flex items-center justify-between w-full p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded"
-    >
-      <span>{t('Pages')}</span>
-      <FaChevronDown
-        className={`ml-2 transform transition-transform ${
-          isMobileDropdownOpen.pages ? 'rotate-180' : ''
-        }`}
-      />
-    </button>
-    {isMobileDropdownOpen.pages && (
-      <ul className="mt-2">
-        {[
-          { name: t('About Us'), path: '/about' },
-          { name: t('Contact Us'), path: '/contact' },
-          { name: t('FAQs'), path: '/faqs' },
-        ].map((item, index) => (
-          <li key={index} className="mb-1">
-            <Link
-              to={item.path}
-              className="block pl-8 p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded"
-              onClick={toggleMenu}
-            >
-              {item.name}
-            </Link>
-          </li>
-        ))}
+        <li className="mb-2">
+        <button
+            onClick={() => toggleMobileDropdown('pages')}
+            className="flex items-center justify-between w-full p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded"
+          >
+            <span>{t('Pages')}</span>
+            <FaChevronDown
+              className={`ml-2 transform transition-transform ${
+                isMobileDropdownOpen.pages ? 'rotate-180' : ''
+              }`}
+            />
+          </button>
+          {isMobileDropdownOpen.pages && (
+            <ul className="mt-2">
+              {[
+                { name: t('About Us'), path: '/about' },
+                { name: t('Contact Us'), path: '/contact' },
+                { name: t('FAQs'), path: '/faqs' },
+              ].map((item, index) => (
+                <li key={index} className="mb-1">
+                  <Link
+                    to={item.path}
+                    className="block pl-8 p-4 text-sm font-semibold text-gray-400 hover:bg-blue-50 hover:text-blue-600 rounded"
+                    onClick={toggleMenu}
+                  >
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </li>
       </ul>
-    )}
-  </li>
-</ul>
           </div>
           <div className="mt-auto">
             <div className="pt-6">

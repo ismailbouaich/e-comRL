@@ -76,7 +76,7 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach($order->orderDetails as $detail)
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $detail->product->product_name }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $detail->product->name }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $detail->quantity }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $detail->total_price }}</td>
                         </tr>

@@ -58,7 +58,7 @@ const Product = () => {
       existingCartItems.push({
         id: product.id,
         quantity,
-        productName: product.product_name,
+        productName: product.name,
         image: product.images && product.images.length > 0 ? `http://127.0.0.1:8000/storage/${product.images[0].file_path}` : '',
         price: product.price
       });
@@ -84,7 +84,7 @@ const Product = () => {
           {product.images && product.images.length > 0 && (
             <img
               src={`http://127.0.0.1:8000/storage/${selectedImage || product.images[0].file_path}`}
-              alt={product.product_name}
+              alt={product.name}
               className="w-full h-auto rounded shadow-lg"
             />
           )}
@@ -94,7 +94,7 @@ const Product = () => {
                 <img
                   key={index}
                   src={`http://127.0.0.1:8000/storage/${image.file_path}`}
-                  alt={`${product.product_name} ${index}`}
+                  alt={`${product.name} ${index}`}
                   className="w-24 h-24 object-cover rounded cursor-pointer"
                   onClick={() => handleImageClick(image.file_path)}
                 />
@@ -103,7 +103,7 @@ const Product = () => {
           )}
         </div>
         <div>
-          <h1 className="text-3xl font-bold mb-4">{product.product_name}</h1>
+          <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
           <p className="mb-4">{product.description}</p>
           <p className="mb-2"><strong>Price:</strong> ${product.price}</p>
           {product.discounted_price && <p className="mb-2"><strong>Discounted Price:</strong> ${product.discounted_price}</p>}
@@ -199,10 +199,10 @@ const Product = () => {
               <div key={item.id} className="border p-4 rounded shadow">
                 <img
                   src={`http://127.0.0.1:8000/storage/${item.images[0]?.file_path}`}
-                  alt={item.product_name}
+                  alt={item.name}
                   className="w-full h-auto rounded mb-2"
                 />
-                <h3 className="text-xl font-semibold">{item.product_name}</h3>
+                <h3 className="text-xl font-semibold">{item.name}</h3>
                 <p className="text-gray-600">${item.price}</p>
               </div>
             ))
@@ -220,10 +220,10 @@ const Product = () => {
               <div key={item.id} className="border p-4 rounded shadow">
                 <img
                   src={`http://127.0.0.1:8000/storage/${item.images[0]?.file_path}`}
-                  alt={item.product_name}
+                  alt={item.name}
                   className="w-full h-auto rounded mb-2"
                 />
-                <h3 className="text-xl font-semibold">{item.product_name}</h3>
+                <h3 className="text-xl font-semibold">{item.name}</h3>
                 <p className="text-gray-600">${item.price}</p>
               </div>
             ))

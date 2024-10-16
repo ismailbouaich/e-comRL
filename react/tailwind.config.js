@@ -14,11 +14,14 @@ module.exports = {
       padding: "2rem",
       screens: {
         "2xl": "1400px",
-        "xxs":"540px", // min-width
       },
    
     },
+    
     extend: {
+      screens: {
+        'max-650': { 'max': '650px' }, // Correct placement
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -73,6 +76,12 @@ module.exports = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
+    },
+  },
+  variants: {
+    // Ensure responsive variants are enabled for padding
+    extend: {
+      padding: ['responsive'],
     },
   },
   plugins: [require("tailwindcss-animate")],
